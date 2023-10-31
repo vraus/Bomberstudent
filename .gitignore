@@ -1,6 +1,10 @@
 # Prerequisites
 *.d
 
+# Some precise files
+main
+old_main.c
+
 # Object files
 *.o
 *.ko
