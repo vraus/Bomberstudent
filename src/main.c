@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
                     else if (strncmp(buffer, "GET game/list", 13) == 0)
                         sprintf(response, "You want the list of available servers\n");
                     else if (strncmp(buffer, "looking for bomberstudent servers", 33) == 0)
-                        sprintf(response, "hello i'm a bomberstuden server.\n");
+                        sprintf(response, "hello i'm a bomberstudent server.\n");
                     else
                     {
                         sprintf(response, "Unkowned command.\n"

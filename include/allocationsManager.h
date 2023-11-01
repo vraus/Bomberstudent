@@ -2,7 +2,7 @@
 #define ALLOCATIONSMANAGER_H
 
 #include "service.h"
-#include <jansson.h>
+#include <../jansson-2.14/src/jansson.h>
 #include <signal.h>
 
 #define MAX_PSERVERS 50
