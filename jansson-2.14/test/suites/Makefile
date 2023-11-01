@@ -85,8 +85,8 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-build_triplet = x86_64-pc-linux-gnu
-host_triplet = x86_64-pc-linux-gnu
+build_triplet = @build@
+host_triplet = @host@
 subdir = test/suites
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -179,6 +179,7 @@ am__relativize = \
     dir1=`echo "$$dir1" | sed -e "$$sed_rest"`; \
   done; \
   reldir="$$dir2"
+<<<<<<< HEAD
 ACLOCAL = ${SHELL} /mnt/d/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14/missing aclocal-1.16
 AMTAR = $${TAR-tar}
 AM_CFLAGS = -Wall -Wextra -Wdeclaration-after-statement -Wshadow -Wno-format-truncation
@@ -188,28 +189,50 @@ AUTOCONF = ${SHELL} /mnt/d/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14
 AUTOHEADER = ${SHELL} /mnt/d/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14/missing autoheader
 AUTOMAKE = ${SHELL} /mnt/d/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14/missing automake-1.16
 AWK = gawk
+=======
+ACLOCAL = ${SHELL} '/home/vraus/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14/missing' aclocal-1.16
+AMTAR = $${TAR-tar}
+AM_CFLAGS = -Wall -Wextra -Wdeclaration-after-statement -Wshadow -Wno-format-truncation
+AM_DEFAULT_VERBOSITY = 1
+AR = @AR@
+AUTOCONF = ${SHELL} '/home/vraus/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14/missing' autoconf
+AUTOHEADER = ${SHELL} '/home/vraus/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14/missing' autoheader
+AUTOMAKE = ${SHELL} '/home/vraus/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14/missing' automake-1.16
+AWK = mawk
+>>>>>>> dfddb8f (Tests on jansson and Updated Makefile)
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
 CPP = gcc -E
 CPPFLAGS = 
 CXX = g++
+<<<<<<< HEAD
 CXXCPP = 
 CXXDEPMODE = depmode=none
 CXXFLAGS = 
+=======
+CXXCPP = @CXXCPP@
+CXXDEPMODE = depmode=gcc3
+CXXFLAGS = -g -O2
+>>>>>>> dfddb8f (Tests on jansson and Updated Makefile)
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
-DLLTOOL = false
-DSYMUTIL = 
-DUMPBIN = 
+DLLTOOL = @DLLTOOL@
+DSYMUTIL = @DSYMUTIL@
+DUMPBIN = @DUMPBIN@
 ECHO_C = 
 ECHO_N = -n
 ECHO_T = 
+<<<<<<< HEAD
 EGREP = /usr/bin/grep -E
+=======
+EGREP = @EGREP@
+ETAGS = etags
+>>>>>>> dfddb8f (Tests on jansson and Updated Makefile)
 EXEEXT = 
-FGREP = /usr/bin/grep -F
-GREP = /usr/bin/grep
+FGREP = @FGREP@
+GREP = @GREP@
 INSTALL = /usr/bin/install -c
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
@@ -217,25 +240,31 @@ INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 JSON_BSYMBOLIC_LDFLAGS = -Wl,-Bsymbolic-functions
 JSON_SYMVER_LDFLAGS = -Wl,--default-symver
-LD = /usr/bin/ld -m elf_x86_64
+LD = @LD@
 LDFLAGS = 
 LIBOBJS = 
 LIBS = 
-LIBTOOL = $(SHELL) $(top_builddir)/libtool
+LIBTOOL = @LIBTOOL@
 LIB_FUZZING_ENGINE = 
-LIPO = 
-LN_S = ln -s
+LIPO = @LIPO@
+LN_S = @LN_S@
 LTLIBOBJS = 
+<<<<<<< HEAD
 LT_SYS_LIBRARY_PATH = 
 MAKEINFO = ${SHELL} /mnt/d/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14/missing makeinfo
 MANIFEST_TOOL = :
+=======
+LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
+MAKEINFO = ${SHELL} '/home/vraus/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14/missing' makeinfo
+MANIFEST_TOOL = @MANIFEST_TOOL@
+>>>>>>> dfddb8f (Tests on jansson and Updated Makefile)
 MKDIR_P = /usr/bin/mkdir -p
-NM = /usr/bin/nm -B
-NMEDIT = 
-OBJDUMP = objdump
+NM = @NM@
+NMEDIT = @NMEDIT@
+OBJDUMP = @OBJDUMP@
 OBJEXT = o
-OTOOL = 
-OTOOL64 = 
+OTOOL = @OTOOL@
+OTOOL64 = @OTOOL64@
 PACKAGE = jansson
 PACKAGE_BUGREPORT = https://github.com/akheron/jansson/issues
 PACKAGE_NAME = jansson
@@ -244,12 +273,13 @@ PACKAGE_TARNAME = jansson
 PACKAGE_URL = 
 PACKAGE_VERSION = 2.14
 PATH_SEPARATOR = :
-RANLIB = ranlib
-SED = /usr/bin/sed
+RANLIB = @RANLIB@
+SED = @SED@
 SET_MAKE = 
 SHELL = /bin/bash
-STRIP = strip
+STRIP = 
 VERSION = 2.14
+<<<<<<< HEAD
 abs_builddir = /mnt/d/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14/test/suites
 abs_srcdir = /mnt/d/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14/test/suites
 abs_top_builddir = /mnt/d/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14
@@ -258,32 +288,46 @@ ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = 
 ac_ct_DUMPBIN = 
+=======
+abs_builddir = /home/vraus/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14/test/suites
+abs_srcdir = /home/vraus/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14/test/suites
+abs_top_builddir = /home/vraus/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14
+abs_top_srcdir = /home/vraus/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14
+ac_ct_AR = @ac_ct_AR@
+ac_ct_CC = gcc
+ac_ct_CXX = g++
+ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
+>>>>>>> dfddb8f (Tests on jansson and Updated Makefile)
 am__include = include
 am__leading_dot = .
 am__quote = 
 am__tar = $${TAR-tar} chof - "$$tardir"
 am__untar = $${TAR-tar} xf -
 bindir = ${exec_prefix}/bin
-build = x86_64-pc-linux-gnu
+build = @build@
 build_alias = 
-build_cpu = x86_64
-build_os = linux-gnu
-build_vendor = pc
+build_cpu = @build_cpu@
+build_os = @build_os@
+build_vendor = @build_vendor@
 builddir = .
 datadir = ${datarootdir}
 datarootdir = ${prefix}/share
 docdir = ${datarootdir}/doc/${PACKAGE_TARNAME}
 dvidir = ${docdir}
 exec_prefix = ${prefix}
-host = x86_64-pc-linux-gnu
+host = @host@
 host_alias = 
-host_cpu = x86_64
-host_os = linux-gnu
-host_vendor = pc
+host_cpu = @host_cpu@
+host_os = @host_os@
+host_vendor = @host_vendor@
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
+<<<<<<< HEAD
 install_sh = ${SHELL} /mnt/d/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14/install-sh
+=======
+install_sh = ${SHELL} /home/vraus/Documents/Cours/RES/Projet/Bomberstudent/jansson-2.14/install-sh
+>>>>>>> dfddb8f (Tests on jansson and Updated Makefile)
 json_have_atomic_builtins = 1
 json_have_localeconv = 1
 json_have_long_long = 1

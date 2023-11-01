@@ -8,7 +8,7 @@
 #define HAVE_CLOSE 1
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
-#define HAVE_DLFCN_H 1
+/* #undef HAVE_DLFCN_H */
 
 /* Define to 1 if you have the <endian.h> header file. */
 #define HAVE_ENDIAN_H 1
@@ -90,7 +90,7 @@
 #define INITIAL_HASHTABLE_ORDER 3
 
 /* Define to the sub-directory where libtool stores uninstalled libraries. */
-#define LT_OBJDIR ".libs/"
+/* #undef LT_OBJDIR */
 
 /* Name of package */
 #define PACKAGE "jansson"
