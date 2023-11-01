@@ -7,11 +7,15 @@
 
 2. [How to use](#how-to-use)
 
-    2.1. [V-0.1.311023](#v-01311023)
+    2.1. [Prerequisites](#prerequisites)
+
+    2.2. [V-0.1.311023](#v-01311023)
 
 3. [Scripts](#scripts)
 
     3.1. [Stress testing the TCP server](#stress-testing-the-server)
+
+    3.2 [Setup Script](#setup-script)
 
 ## RES Game Project
 
@@ -30,6 +34,33 @@
 > + `X`: This indicates the major version. It is incremented for significant changes that may introduce backward-incompatible features.
 > + `Y`: This is the minor version. It is typically incremented for smaller, backward-compatible changes or feature additions.
 > + `Z`: This represents the patch version. It is used for bug fixes or small improvements that are backward-compatible. In our case this will always be the date of the first commit of the patch version.
+
+#### Prerequisites
+
+Before compiling and running this project, make sure to set up the necessary environment dependencies (You can use [this setup script](#setup-script)).
+
++ Update your environment:
+```bash
+sudo apt-get update
+```
+
++ Install `autoreconf`, `libtool`, and `automake` using the following commands:
+
+```bash
+sudo apt-get install autoconf 
+sudo apt-get install libtool 
+sudo apt-get install automake
+```
+
++ Set up Jansson in the project. Navigate to the directory containing this makefile and execute the following commands to install the Jansson library:
+
+```bash
+cd jansson-master
+autoreconf -i # Only necessary if ./configure doesn't exist or isn't recognized
+./configure
+make
+sudo make install
+```
 
 #### V-0.1.311023
 
@@ -78,4 +109,34 @@ done
 
 # Wait for all child process to end
 wait
+```
+#### Setup Script
+
+This Bash script automates the setup process for compiling and running a project that requires specific environment dependencies.
+
+```bash
+#!/bin/bash
+
+# Check if the script is being run with superuser rights
+if [ "$EUID" -ne 0 ]
+  then echo "Please run with superuser rights (sudo)"
+  exit
+fi
+
+# Update the environment
+apt-get update
+
+# Install autoreconf, libtool, and automake
+apt-get install autoconf libtool automake
+
+# Navigate to the jansson-master directory
+cd jansson-master
+
+# Autoreconf (if necessary)
+autoreconf -i
+
+# Configure, make, and install Jansson
+./configure
+make
+make install
 ```
