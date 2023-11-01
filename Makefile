@@ -6,7 +6,7 @@ CFLAGS := -Wall -g
 SRC_DIR := src
 BUILD_DIR := build
 INC_DIR := include
-LIB_DIR := -L./libs
+LIB_DIR := -L./jansson-master/src
 
 LIBS := -ljansson
 LDFLAGS := $(LIB_DIR) $(LIBS) -Wl,-rpath=./libs -static

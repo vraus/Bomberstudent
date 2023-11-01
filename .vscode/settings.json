@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "allocationsmanager.h": "c"
+        "allocationsmanager.h": "c",
+        "jansson.h": "c"
     }
 }
