@@ -4,6 +4,7 @@
 # Some precise files
 main
 old_main.c
+./jansson-master/test
 
 # Object files
 *.o
