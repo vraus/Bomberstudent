@@ -15,7 +15,7 @@
 
     3.1. [Stress testing the TCP server](#stress-testing-the-server)
 
-    3.2 [Setup Script](#setup-script)
+    3.2. [Setup Script](#setup-script)
 
 ## RES Game Project
 
