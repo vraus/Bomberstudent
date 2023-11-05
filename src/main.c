@@ -4,6 +4,7 @@
 #define MAX_SERVERS 200
 #define MAX_CLIENTS 100
 #define GAME_LIST_PATH "json/gameslist.json"
+#define MAPS_LIST_PATH "json/mapslist.json"
 
 int port = 0;
 int num_clients = 0;
@@ -15,7 +16,7 @@ void kill_handler(int n)
     exit(EXIT_SUCCESS);
 }
 
-int actionGameList()
+int actionGameList(int *cFd)
 {
     FILE *gamesListFile = fopen(GAME_LIST_PATH, "r");
     if (!gamesListFile)
@@ -48,8 +49,50 @@ int actionGameList()
     else if (add_json_t(root))
         handle_error("add_json_t", -1);
 
+    send(*cFd, content, strlen(content), 0);
+
     free(content);
     fclose(gamesListFile);
+    return 0;
+}
+
+int actionMapsList(int *cFd)
+{
+    FILE *mapsListFile = fopen(MAPS_LIST_PATH, "r");
+    if (!mapsListFile)
+        handle_error("fopen", -1);
+    else if (add_file(mapsListFile) < 0)
+        handle_error("add_file", -1);
+
+    fseek(mapsListFile, 0, SEEK_END);
+    long tell = ftell(mapsListFile);
+    fseek(mapsListFile, 0, SEEK_SET);
+
+    char *content = (char *)malloc(tell + 1);
+    if (!content)
+        handle_error("malloc", -1);
+    else if (add_string(content) < 0)
+        handle_error("add_string", -1);
+
+    fread(content, 1, tell, mapsListFile);
+    content[tell] = '\0';
+
+    json_t *root;
+    json_error_t error;
+    root = json_loads(content, 0, &error);
+
+    if (!root)
+    {
+        free(content);
+        handle_error("json_loads", 1);
+    }
+    else if (add_json_t(root))
+        handle_error("add_json_t", -1);
+
+    send(*cFd, content, strlen(content), 0);
+
+    free(content);
+    fclose(mapsListFile);
     return 0;
 }
 
@@ -155,11 +198,19 @@ int main(int argc, char *argv[])
                     char response[256];
                     buffer[valread] = '\0';
                     if (strncmp(buffer, "POST game/create", 16) == 0)
+                    {
                         sprintf(response, "You want to create a game\n");
+                    }
                     else if (strncmp(buffer, "GET maps/list", 13) == 0)
+                    {
                         sprintf(response, "You want the list of available maps\n");
+                        actionGameList(&client_sockets[index]);
+                    }
                     else if (strncmp(buffer, "GET game/list", 13) == 0)
+                    {
                         sprintf(response, "You want the list of available servers\n");
+                        actionGameList(&client_sockets[index]);
+                    }
                     else if (strncmp(buffer, "looking for bomberstudent servers", 33) == 0)
                         sprintf(response, "hello i'm a bomberstudent server.\n");
                     else

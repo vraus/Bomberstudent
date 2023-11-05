@@ -1,0 +1,9 @@
+{
+    "action": "game/list",
+    "statut": "200",
+    "message": "ok",
+    "nbGamesList": 0,
+    "games": [
+        {}
+    ]
+}
