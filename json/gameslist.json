@@ -2,10 +2,12 @@
     "action":"game/list",
     "statut":"200",
     "message":"ok",
-    "nbGamesList":0,
+    "nbGamesList":1,
     "games":[
         {
-
+            "name":"game1",
+            "nbPlayer":0,
+            "mapId":0
         }
     ]
 }

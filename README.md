@@ -7,15 +7,17 @@
 
 2. [How to use](#how-to-use)
 
-    2.1. [Prerequisites](#prerequisites)
+    1. [Prerequisites](#prerequisites)
 
-    2.2. [V-0.1.311023](#v-01311023)
+    2. [Plugins](#plugins)
+
+    3. [V-0.1.311023](#v-01311023)
 
 3. [Scripts](#scripts)
 
-    3.1. [Stress testing the TCP server](#stress-testing-the-server)
+    1. [Stress testing the TCP server](#stress-testing-the-server)
 
-    3.2. [Setup Script](#setup-script)
+    2. [Setup Script](#setup-script)
 
 ## RES Game Project
 
@@ -40,6 +42,7 @@
 Before compiling and running this project, make sure to set up the necessary environment dependencies (You can use [this setup script](#setup-script)).
 
 + Update your environment:
+
 ```bash
 sudo apt-get update
 ```
@@ -61,6 +64,18 @@ autoreconf -i # Only necessary if ./configure doesn't exist or isn't recognized
 make
 sudo make install
 ```
+
+#### Plugins
+
+##### Todo Tree
+
+> from Gruntfuggly, [zaonce.com](https://zaonce.com).
+
+We use this extension available on the marketplace of VSCode to organize the workspace with TODO tags.
+
+Simple documentation on how to use TODO comment and configure in the workspace  can be found [here](https://thomasventurini.com/articles/the-best-way-to-work-with-todos-in-vscode/).
+
+Also interesting if we want to use icons, the list of all supported icons can be found [here](https://microsoft.github.io/vscode-codicons/dist/codicon.html).
 
 #### V-0.1.311023
 
@@ -110,6 +125,7 @@ done
 # Wait for all child process to end
 wait
 ```
+
 #### Setup Script
 
 This Bash script automates the setup process for compiling and running a project that requires specific environment dependencies.

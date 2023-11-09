@@ -16,12 +16,13 @@ void kill_handler(int n)
     exit(EXIT_SUCCESS);
 }
 
-int actionGameList(int *cFd)
+int actionGameCreate(int *cFd)
 {
-    FILE *gamesListFile = fopen(GAME_LIST_PATH, "r");
+    FILE *gamesListFile = fopen(GAME_LIST_PATH, "r++");
     if (!gamesListFile)
         handle_error("fopen", -1);
-    else if (add_file(gamesListFile) < 0)
+
+    if (add_file(gamesListFile) < 0)
         handle_error("add_file", -1);
 
     fseek(gamesListFile, 0, SEEK_END);
@@ -30,8 +31,55 @@ int actionGameList(int *cFd)
 
     char *content = (char *)malloc(tell + 1);
     if (!content)
-        handle_error("malloc", -1);
-    else if (add_string(content) < 0)
+        handle_error("content: malloc", -1);
+
+    if (add_string(content) < 0)
+        handle_error("content: add_string", -1);
+
+    fread(content, 1, tell, gamesListFile);
+    content[tell] = '\0';
+
+    printf("\n%s\n", content);
+
+    // TODO: Create a JSON Object and populate it with data
+    json_t *root;
+    json_error_t error;
+    root = json_loads(content, 0, &error);
+
+    if (!root)
+    {
+        free(content);
+        handle_error("json_loads", -1);
+    }
+
+    if (add_json_t(root) < 0)
+        handle_error("add_json_t", -1);
+
+    // TODO: Add key-value pairs to the JSON object
+
+    // TODO: Write the JSON object to the file
+
+    return 0;
+}
+
+int actionGameList(int *cFd)
+{
+    FILE *gamesListFile = fopen(GAME_LIST_PATH, "r");
+    if (!gamesListFile)
+        handle_error("fopen", -1);
+
+    if (add_file(gamesListFile) < 0)
+        handle_error("add_file", -1);
+
+    fseek(gamesListFile, 0, SEEK_END);
+    long tell = ftell(gamesListFile);
+    fseek(gamesListFile, 0, SEEK_SET);
+
+    char *content = (char *)malloc(tell + 1);
+    if (!content)
+        handle_error("content: malloc", -1);
+
+    if (add_string(content) < 0)
         handle_error("add_string", -1);
 
     fread(content, 1, tell, gamesListFile);
@@ -44,9 +92,10 @@ int actionGameList(int *cFd)
     if (!root)
     {
         free(content);
-        handle_error("json_loads", 1);
+        handle_error("json_loads", -1);
     }
-    else if (add_json_t(root))
+
+    if (add_json_t(root) < 0)
         handle_error("add_json_t", -1);
 
     send(*cFd, content, strlen(content), 0);
@@ -61,7 +110,8 @@ int actionMapsList(int *cFd)
     FILE *mapsListFile = fopen(MAPS_LIST_PATH, "r");
     if (!mapsListFile)
         handle_error("fopen", -1);
-    else if (add_file(mapsListFile) < 0)
+
+    if (add_file(mapsListFile) < 0)
         handle_error("add_file", -1);
 
     fseek(mapsListFile, 0, SEEK_END);
@@ -71,7 +121,8 @@ int actionMapsList(int *cFd)
     char *content = (char *)malloc(tell + 1);
     if (!content)
         handle_error("malloc", -1);
-    else if (add_string(content) < 0)
+
+    if (add_string(content) < 0)
         handle_error("add_string", -1);
 
     fread(content, 1, tell, mapsListFile);
@@ -84,9 +135,10 @@ int actionMapsList(int *cFd)
     if (!root)
     {
         free(content);
-        handle_error("json_loads", 1);
+        handle_error("json_loads", -1);
     }
-    else if (add_json_t(root))
+
+    if (add_json_t(root) < 0)
         handle_error("add_json_t", -1);
 
     send(*cFd, content, strlen(content), 0);
@@ -197,19 +249,21 @@ int main(int argc, char *argv[])
                 {
                     char response[256];
                     buffer[valread] = '\0';
+                    // TODO: When received creates a UDP server in a pthread and connects the client fd to it
                     if (strncmp(buffer, "POST game/create", 16) == 0)
                     {
-                        sprintf(response, "You want to create a game\n");
+                        if (actionGameCreate(&client_sockets[index]) < 0)
+                            handle_error_noexit("POST game/create");
                     }
                     else if (strncmp(buffer, "GET maps/list", 13) == 0)
                     {
-                        sprintf(response, "You want the list of available maps\n");
-                        actionGameList(&client_sockets[index]);
+                        if (actionMapsList(&client_sockets[index]) < 0)
+                            handle_error_noexit("GET maps/list");
                     }
                     else if (strncmp(buffer, "GET game/list", 13) == 0)
                     {
-                        sprintf(response, "You want the list of available servers\n");
-                        actionGameList(&client_sockets[index]);
+                        if (actionGameList(&client_sockets[index]) < 0)
+                            handle_error_noexit("GET game/list");
                     }
                     else if (strncmp(buffer, "looking for bomberstudent servers", 33) == 0)
                         sprintf(response, "hello i'm a bomberstudent server.\n");

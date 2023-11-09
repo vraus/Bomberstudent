@@ -11,15 +11,26 @@
 #include <sys/select.h>
 
 /**
- * @brief `int` Macro printing printing an error message and returning your error status
+ * @brief `int` Macro printing an error message and returning your error status
  * @param msg `char *` perror your message passed
  * @param status `int` return the value for error handling
+ * @returns exit (status)
  */
 #define handle_error(msg, status) \
     do                            \
     {                             \
         perror(msg);              \
         return status;            \
+    } while (0)
+
+/**
+ * @brief Macro printing and error message without exiting
+ * @param msg perror your message passed
+ */
+#define handle_error_noexit(msg) \
+    do                           \
+    {                            \
+        perror(msg);             \
     } while (0)
 
 /**
