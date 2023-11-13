@@ -164,6 +164,7 @@ int setupServerManager(Server *serverManager)
     return 0;
 }
 
+// TODO: Change the use of jansson.h to cJSON.h for the json library
 int main(int argc, char *argv[])
 {
     signal(SIGINT, kill_handler);
