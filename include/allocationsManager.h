@@ -2,8 +2,8 @@
 #define ALLOCATIONSMANAGER_H
 
 #include "service.h"
-#include "../jansson-master/src/jansson.h"
 #include <signal.h>
+#include "cJSON.h"
 
 #define MAX_PSERVERS 50
 #define MAX_PSTRINGS 1024
@@ -29,7 +29,8 @@ typedef struct
     int num_pstrings;
     FILE **pfiles;
     int num_pfiles;
-    json_t **pjson_t;
+    // FIXME: Modify the structure to correspond to the new library
+    // json_t **pjson_t;
     int num_pjson_t;
 } AllocationManager;
 
@@ -69,17 +70,19 @@ int add_file(FILE *file);
  */
 int fclose_file(FILE *string);
 
+// FIXME: Modify those methods to correspond to the new library
+
 /**
  * @brief: `int` Use this function to add a json_t to the AllocationManager
  * @param string: `json_t *` A pointer to the json_t you want to add
  */
-int add_json_t(json_t *pjson);
+// int add_json_t(json_t *pjson);
 
 /**
  * @brief: `int` Use this function whenever you want to free a json_t
  * @param: `json_t *` The pointer to the json_t you want to free
  */
-int free_json_t(json_t *pjson_t);
+// int free_json_t(json_t *pjson_t);
 
 /**
  * @brief: `void` Use this function to free all allocations in the AllocationManager

@@ -120,6 +120,8 @@ int fclose_file(FILE *file)
     return 0;
 }
 
+// FIXME: Modify the methods to correspond to the new library
+/*
 int add_json_t(json_t *file)
 {
     if (allocManager.num_pjson_t < MAX_PFILES)
@@ -156,8 +158,9 @@ int free_json_t(json_t *pjson_t)
         }
     }
     return 0;
-}
+}*/
 
+// FIXME: Modify the free to correspond to the new library
 void free_all_allocations(void)
 {
     for (int i = 0; i < allocManager.num_pservers; i++)
@@ -166,12 +169,12 @@ void free_all_allocations(void)
         free(allocManager.pstrings[i]);
     for (int i = 0; i < allocManager.num_pfiles; i++)
         fclose(allocManager.pfiles[i]);
-    for (int i = 0; i < allocManager.num_pjson_t; i++)
-        free(allocManager.pjson_t[i]);
+    // for (int i = 0; i < allocManager.num_pjson_t; i++)
+    //    free(allocManager.pjson_t[i]);
 
     free(allocManager.pservers);
     free(allocManager.pstrings);
     free(allocManager.pfiles);
-    free(allocManager.pjson_t);
+    // free(allocManager.pjson_t);
     printf("\nEverything was freed\n");
 }

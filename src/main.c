@@ -41,10 +41,10 @@ int actionGameCreate(int *cFd)
 
     printf("\n%s\n", content);
 
-    // TODO: Create a JSON Object and populate it with data
-    json_t *root;
-    json_error_t error;
-    root = json_loads(content, 0, &error);
+    // FIXME: Modify usage of JSON to correspond to the new library
+    /* json_t *root;
+    // json_error_t error;
+    // root = json_loads(content, 0, &error);
 
     if (!root)
     {
@@ -54,10 +54,7 @@ int actionGameCreate(int *cFd)
 
     if (add_json_t(root) < 0)
         handle_error("add_json_t", -1);
-
-    // TODO: Add key-value pairs to the JSON object
-
-    // TODO: Write the JSON object to the file
+    */
 
     return 0;
 }
@@ -85,7 +82,8 @@ int actionGameList(int *cFd)
     fread(content, 1, tell, gamesListFile);
     content[tell] = '\0';
 
-    json_t *root;
+    // FIXME: Modify to correspond to the new library
+    /*json_t *root;
     json_error_t error;
     root = json_loads(content, 0, &error);
 
@@ -96,7 +94,7 @@ int actionGameList(int *cFd)
     }
 
     if (add_json_t(root) < 0)
-        handle_error("add_json_t", -1);
+        handle_error("add_json_t", -1);*/
 
     send(*cFd, content, strlen(content), 0);
 
@@ -128,7 +126,8 @@ int actionMapsList(int *cFd)
     fread(content, 1, tell, mapsListFile);
     content[tell] = '\0';
 
-    json_t *root;
+    // FIXME: Modify to correspond to the new library
+    /*json_t *root;
     json_error_t error;
     root = json_loads(content, 0, &error);
 
@@ -139,7 +138,7 @@ int actionMapsList(int *cFd)
     }
 
     if (add_json_t(root) < 0)
-        handle_error("add_json_t", -1);
+        handle_error("add_json_t", -1);*/
 
     send(*cFd, content, strlen(content), 0);
 
