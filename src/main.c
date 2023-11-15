@@ -76,30 +76,29 @@ int actionGameList(int *cFd)
     if (!content)
         handle_error("content: malloc", -1);
 
-    if (add_string(content) < 0)
-        handle_error("add_string", -1);
+    int len = fread(buffer, 1, sizeof(buffer), gamesListFile);
+    fclose(gamesListFile);
 
-    fread(content, 1, tell, gamesListFile);
-    content[tell] = '\0';
-
-    // FIXME: Modify to correspond to the new library
-    /*json_t *root;
-    json_error_t error;
-    root = json_loads(content, 0, &error);
-
-    if (!root)
+    // parse JSON data
+    cJSON *json = cJSON_Parse(buffer);
+    if (json == NULL)
     {
-        free(content);
-        handle_error("json_loads", -1);
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL)
+            handle_error("error_ptr", -1);
+        cJSON_Delete(json);
+        return 1;
     }
 
-    if (add_json_t(root) < 0)
-        handle_error("add_json_t", -1);*/
-
-    send(*cFd, content, strlen(content), 0);
+    cJSON *name = cJSON_GetObjectItemCaseSensitive(json, "action");
+    if (cJSON_IsString(name) && (name->valuestring) != NULL)
+    {
+        printf("%s\n", name->valuestring);
+        send(*cFd, name->valuestring, strlen(name->valuestring), 0);
+    }
 
     free(content);
-    fclose(gamesListFile);
+    cJSON_Delete(json);
     return 0;
 }
 
@@ -163,7 +162,6 @@ int setupServerManager(Server *serverManager)
     return 0;
 }
 
-// TODO: Change the use of jansson.h to cJSON.h for the json library
 int main(int argc, char *argv[])
 {
     signal(SIGINT, kill_handler);
