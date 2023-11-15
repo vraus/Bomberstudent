@@ -39,30 +39,14 @@
 
 #### Prerequisites
 
-Before compiling and running this project, make sure to set up the necessary environment dependencies (You can use [this setup script](#setup-script)).
+> Since version [V-0.2.151123](#v-02151123), there are no dependencies to install before building and using the project.
+
+Before compiling and running this project, make sure to set up the necessary environment dependencies.
 
 + Update your environment:
 
 ```bash
 sudo apt-get update
-```
-
-+ Install `autoreconf`, `libtool`, and `automake` using the following commands:
-
-```bash
-sudo apt-get install autoconf 
-sudo apt-get install libtool 
-sudo apt-get install automake
-```
-
-+ Set up Jansson in the project. Navigate to the directory containing this makefile and execute the following commands to install the Jansson library:
-
-```bash
-cd jansson-master
-autoreconf -i # Only necessary if ./configure doesn't exist or isn't recognized
-./configure
-make
-sudo make install
 ```
 
 #### Plugins
@@ -94,6 +78,10 @@ To test the code at this current state follow these steps:
 ```
 
 + Feel free to send messages to the server from any connected client terminal. Don't forget to start with a polite greeting - say 'hello' first!
+
+#### V-0.2.151123
+
+This new version of the project is similar to [V-0.1.311023](#v-01311023), and the commands to run and test the code are the same. We only changed our JSON file management library to use `cJSON.h` instead of `jansson.h`.
 
 ### Scripts
 
@@ -127,6 +115,8 @@ wait
 ```
 
 #### Setup Script
+
+> This setup script is no longer necessary since we don't use the `jansson.h` library anymore.
 
 This Bash script automates the setup process for compiling and running a project that requires specific environment dependencies.
 
