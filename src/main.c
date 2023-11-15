@@ -18,6 +18,7 @@ void kill_handler(int n)
 
 int actionGameCreate(int *cFd)
 {
+    /*
     FILE *gamesListFile = fopen(GAME_LIST_PATH, "r++");
     if (!gamesListFile)
         handle_error("fopen", -1);
@@ -29,33 +30,40 @@ int actionGameCreate(int *cFd)
     long tell = ftell(gamesListFile);
     fseek(gamesListFile, 0, SEEK_SET);
 
-    char *content = (char *)malloc(tell + 1);
-    if (!content)
-        handle_error("content: malloc", -1);
-
-    if (add_string(content) < 0)
-        handle_error("content: add_string", -1);
-
-    fread(content, 1, tell, gamesListFile);
-    content[tell] = '\0';
-
-    printf("\n%s\n", content);
-
-    // FIXME: Modify usage of JSON to correspond to the new library
-    /* json_t *root;
-    // json_error_t error;
-    // root = json_loads(content, 0, &error);
-
-    if (!root)
-    {
-        free(content);
-        handle_error("json_loads", -1);
+    char content[tell];
+    if(fread(content, 1, tell, gamesListFile) < 0) {
+        handle_error("fread actionGameCreate", -1);
     }
 
-    if (add_json_t(root) < 0)
-        handle_error("add_json_t", -1);
+    content[tell] = '\0';
     */
+   
+    char content[strlen(buffer)];
+    for (size_t i = 0; i < strlen(buffer) - 17; i++)
+        content[i] = buffer[i + 17];
+    printf("%s\n", content);
+    cJSON *root = cJSON_Parse(content);
 
+    if (root == NULL)
+    {
+        const char *error_ptr = cJSON_GetErrorPtr(); 
+        if (error_ptr != NULL)  
+            handle_error_noexit("Error\n"); 
+        cJSON_Delete(root); 
+        return 1; 
+    }
+
+    printf("%s\n", content);
+    send(*cFd, content, strlen(content), 0);
+
+    // access the JSON data 
+    cJSON *name = cJSON_GetObjectItemCaseSensitive(root, "name"); 
+    if (cJSON_IsString(name) && (name->valuestring != NULL)) { 
+        printf("Name: %s\n", name->valuestring);
+        send(*cFd, name->valuestring, strlen(name->valuestring), 0);
+    } 
+
+    cJSON_Delete(root);
     return 0;
 }
 
