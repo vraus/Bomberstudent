@@ -59,46 +59,33 @@ int actionGameCreate(int *cFd)
     return 0;
 }
 
+/**
+ * @brief Function called when client uses command GET game/list.
+ *
+ */
 int actionGameList(int *cFd)
 {
     FILE *gamesListFile = fopen(GAME_LIST_PATH, "r");
     if (!gamesListFile)
         handle_error("fopen", -1);
 
-    if (add_file(gamesListFile) < 0)
-        handle_error("add_file", -1);
+    // BUG: Make segfault when CTRL+C
+    /*if (add_file(gamesListFile) < 0)
+        handle_error("add_file", -1);*/
 
     fseek(gamesListFile, 0, SEEK_END);
     long tell = ftell(gamesListFile);
     fseek(gamesListFile, 0, SEEK_SET);
 
-    char *content = (char *)malloc(tell + 1);
-    if (!content)
-        handle_error("content: malloc", -1);
+    char content[tell];
 
-    int len = fread(buffer, 1, sizeof(buffer), gamesListFile);
+    if (fread(content, 1, sizeof(content), gamesListFile) < 0)
+        handle_error("fread", -1);
     fclose(gamesListFile);
 
-    // parse JSON data
-    cJSON *json = cJSON_Parse(buffer);
-    if (json == NULL)
-    {
-        const char *error_ptr = cJSON_GetErrorPtr();
-        if (error_ptr != NULL)
-            handle_error("error_ptr", -1);
-        cJSON_Delete(json);
-        return 1;
-    }
+    content[tell] = '\0';
+    send(*cFd, content, strlen(content), 0);
 
-    cJSON *name = cJSON_GetObjectItemCaseSensitive(json, "action");
-    if (cJSON_IsString(name) && (name->valuestring) != NULL)
-    {
-        printf("%s\n", name->valuestring);
-        send(*cFd, name->valuestring, strlen(name->valuestring), 0);
-    }
-
-    free(content);
-    cJSON_Delete(json);
     return 0;
 }
 
@@ -108,41 +95,24 @@ int actionMapsList(int *cFd)
     if (!mapsListFile)
         handle_error("fopen", -1);
 
-    if (add_file(mapsListFile) < 0)
-        handle_error("add_file", -1);
+    // BUG: Make segfault when CTRL+C
+    /*if (add_file(gamesListFile) < 0)
+        handle_error("add_file", -1);*/
 
     fseek(mapsListFile, 0, SEEK_END);
     long tell = ftell(mapsListFile);
     fseek(mapsListFile, 0, SEEK_SET);
 
-    char *content = (char *)malloc(tell + 1);
-    if (!content)
-        handle_error("malloc", -1);
+    char content[tell];
 
-    if (add_string(content) < 0)
-        handle_error("add_string", -1);
+    if (fread(content, 1, sizeof(content), mapsListFile) < 0)
+        handle_error("fread", -1);
 
-    fread(content, 1, tell, mapsListFile);
+    fclose(mapsListFile);
+
     content[tell] = '\0';
-
-    // FIXME: Modify to correspond to the new library
-    /*json_t *root;
-    json_error_t error;
-    root = json_loads(content, 0, &error);
-
-    if (!root)
-    {
-        free(content);
-        handle_error("json_loads", -1);
-    }
-
-    if (add_json_t(root) < 0)
-        handle_error("add_json_t", -1);*/
-
     send(*cFd, content, strlen(content), 0);
 
-    free(content);
-    fclose(mapsListFile);
     return 0;
 }
 
@@ -245,7 +215,7 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    char response[256];
+                    char *response = (char *)calloc(256, sizeof(char));
                     buffer[valread] = '\0';
                     // TODO: When received creates a UDP server in a pthread and connects the client fd to it
                     if (strncmp(buffer, "POST game/create", 16) == 0)
@@ -264,7 +234,12 @@ int main(int argc, char *argv[])
                             handle_error_noexit("GET game/list");
                     }
                     else if (strncmp(buffer, "looking for bomberstudent servers", 33) == 0)
+                    {
+
                         sprintf(response, "hello i'm a bomberstudent server.\n");
+                        response[strlen(response) + 1] = '\0';
+                        send(client_sockets[index], response, strlen(response), 0);
+                    }
                     else
                     {
                         sprintf(response, "Unkowned command.\n"
@@ -273,10 +248,9 @@ int main(int argc, char *argv[])
                                           " - 'GET maps/list'\n"
                                           " - 'GET game/list'\n"
                                           " - 'POST game/create'\n");
-                    }
-                    response[strlen(response) + 1] = '\0';
-                    if (response != NULL)
+                        response[strlen(response) + 1] = '\0';
                         send(client_sockets[index], response, strlen(response), 0);
+                    }
                 }
             }
         }
