@@ -10,12 +10,16 @@ int port = 0;
 int num_clients = 0;
 char buffer[1024];
 
+/** @brief Signal handler to free allocations when SIGINT on the main server */
 void kill_handler(int n)
 {
     free_all_allocations();
     exit(EXIT_SUCCESS);
 }
 
+/** @brief Function called when client send `POST game/create` request.
+ *  @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
+ */
 int actionGameCreate(int *cFd)
 {
     /*
@@ -37,7 +41,7 @@ int actionGameCreate(int *cFd)
 
     content[tell] = '\0';
     */
-   
+
     char content[strlen(buffer)];
     for (size_t i = 0; i < strlen(buffer) - 17; i++)
         content[i] = buffer[i + 17];
@@ -46,30 +50,31 @@ int actionGameCreate(int *cFd)
 
     if (root == NULL)
     {
-        const char *error_ptr = cJSON_GetErrorPtr(); 
-        if (error_ptr != NULL)  
-            handle_error_noexit("Error\n"); 
-        cJSON_Delete(root); 
-        return 1; 
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL)
+            handle_error_noexit("Error\n");
+        cJSON_Delete(root);
+        return 1;
     }
 
     printf("%s\n", content);
     send(*cFd, content, strlen(content), 0);
 
-    // access the JSON data 
-    cJSON *name = cJSON_GetObjectItemCaseSensitive(root, "name"); 
-    if (cJSON_IsString(name) && (name->valuestring != NULL)) { 
+    // access the JSON data
+    cJSON *name = cJSON_GetObjectItemCaseSensitive(root, "name");
+    if (cJSON_IsString(name) && (name->valuestring != NULL))
+    {
         printf("Name: %s\n", name->valuestring);
         send(*cFd, name->valuestring, strlen(name->valuestring), 0);
-    } 
+    }
 
     cJSON_Delete(root);
     return 0;
 }
 
 /**
- * @brief Function called when client uses command GET game/list.
- *
+ * @brief Function called when client uses command `GET game/list`.
+ * @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
  */
 int actionGameList(int *cFd)
 {
@@ -97,6 +102,10 @@ int actionGameList(int *cFd)
     return 0;
 }
 
+/**
+ * @brief Function called when client uses command `GET maps/list`.
+ * @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
+ */
 int actionMapsList(int *cFd)
 {
     FILE *mapsListFile = fopen(MAPS_LIST_PATH, "r");
@@ -124,6 +133,13 @@ int actionMapsList(int *cFd)
     return 0;
 }
 
+/**
+ * @brief Function used to setup the main Server. This will instantiate
+ * using `service.h` functions to bind the socket.
+ * Then `setupServerManager()` put the given server into listening mode.
+ * @param serverManager `struct Server` pointing to the server to setup.
+ * @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
+ */
 int setupServerManager(Server *serverManager)
 {
     if (init_server(serverManager, 42069) < 0)
