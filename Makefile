@@ -7,11 +7,8 @@ SRC_DIR := src
 BUILD_DIR := build
 INC_DIR := include
 
-# List of source files to bo excluded from compilation
-EXCLUDED_SRC := src/old_main.c
-
 # Find all source files in the 'src' directory, except those listed in the 'EXCLUDED_SRC
-SRC := $(filter-out $(EXCLUDED_SRC), $(wildcard $(SRC_DIR)/*.c))
+SRC := $(wildcard $(SRC_DIR)/*.c)
 
 # Generate a list of object files in the 'build' directory from the source files	
 OBJ := $(SRC:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
