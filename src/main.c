@@ -2,7 +2,7 @@
 #include "allocationsManager.h"
 
 #define MAX_SERVERS 200
-#define MAX_CLIENTS 100
+#define MAX_CLIENTS 200
 #define GAME_LIST_PATH "json/gameslist.json"
 #define MAPS_LIST_PATH "json/mapslist.json"
 
