@@ -25,7 +25,8 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 all: main
 
 # Target to build the 'main' executable using the object files
-main: $(OBJ)
+main: $(OBJ)	
+	rm -rf main
 	@$(CC) $^ -o $@
 
 # Target to clean up generated file from the compilation
