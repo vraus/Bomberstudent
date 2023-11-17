@@ -5,6 +5,7 @@
 #define MAX_CLIENTS 200
 #define GAME_LIST_PATH "json/gameslist.json"
 #define MAPS_LIST_PATH "json/mapslist.json"
+#define GAME_CREATE_PATH "json/gamecreate.json"
 
 int port = 0;
 int num_clients = 0;
@@ -22,13 +23,13 @@ void kill_handler(int n)
  */
 int actionGameCreate(int *cFd)
 {
-    /*
-    FILE *gamesListFile = fopen(GAME_LIST_PATH, "r++");
+    FILE *gamesListFile = fopen(GAME_CREATE_PATH, "r++");
     if (!gamesListFile)
         handle_error("fopen", -1);
 
-    if (add_file(gamesListFile) < 0)
-        handle_error("add_file", -1);
+    // BUG: Make segfault when CTRL+C
+    /*if (add_file(gamesListFile) < 0)
+        handle_error("add_file", -1);*/
 
     fseek(gamesListFile, 0, SEEK_END);
     long tell = ftell(gamesListFile);
@@ -40,9 +41,9 @@ int actionGameCreate(int *cFd)
     }
 
     content[tell] = '\0';
-    */
+    send(*cFd, content, strlen(content), 0);
 
-    char content[strlen(buffer)];
+    /*char content[strlen(buffer)];
     for (size_t i = 0; i < strlen(buffer) - 17; i++)
         content[i] = buffer[i + 17];
     printf("%s\n", content);
@@ -68,7 +69,7 @@ int actionGameCreate(int *cFd)
         send(*cFd, name->valuestring, strlen(name->valuestring), 0);
     }
 
-    cJSON_Delete(root);
+    cJSON_Delete(root);*/
     return 0;
 }
 
@@ -154,6 +155,42 @@ int setupServerManager(Server *serverManager)
     printf("I'm listening...\n");
 
     return 0;
+}
+
+void answerServer(int *client_sockets, int index, char *response, char *buffer) {
+    if (strncmp(buffer, "POST game/create", 16) == 0)
+    {
+        if (actionGameCreate(&client_sockets[index]) < 0)
+            handle_error_noexit("POST game/create");
+    }
+    else if (strncmp(buffer, "GET maps/list", 13) == 0)
+    {
+        if (actionMapsList(&client_sockets[index]) < 0)
+            handle_error_noexit("GET maps/list");
+    }
+    else if (strncmp(buffer, "GET game/list", 13) == 0)
+    {
+        if (actionGameList(&client_sockets[index]) < 0)
+            handle_error_noexit("GET game/list");
+    }
+    else if (strncmp(buffer, "looking for bomberstudent servers", 33) == 0)
+    {
+
+        sprintf(response, "hello i'm a bomberstudent server.\n");
+        response[strlen(response) + 1] = '\0';
+        send(client_sockets[index], response, strlen(response), 0);
+    }
+    else
+    {
+        sprintf(response, "Unkowned command.\n"
+                            "List of commands:\n"
+                            " - 'looking for bomberstudent servers'\n"
+                            " - 'GET maps/list'\n"
+                            " - 'GET game/list'\n"
+                            " - 'POST game/create'\n");
+        response[strlen(response) + 1] = '\0';
+        send(client_sockets[index], response, strlen(response), 0);
+    }
 }
 
 int main(int argc, char *argv[])
@@ -242,39 +279,7 @@ int main(int argc, char *argv[])
                     char *response = (char *)calloc(256, sizeof(char));
                     buffer[valread] = '\0';
                     // TODO: When received creates a UDP server in a pthread and connects the client fd to it
-                    if (strncmp(buffer, "POST game/create", 16) == 0)
-                    {
-                        if (actionGameCreate(&client_sockets[index]) < 0)
-                            handle_error_noexit("POST game/create");
-                    }
-                    else if (strncmp(buffer, "GET maps/list", 13) == 0)
-                    {
-                        if (actionMapsList(&client_sockets[index]) < 0)
-                            handle_error_noexit("GET maps/list");
-                    }
-                    else if (strncmp(buffer, "GET game/list", 13) == 0)
-                    {
-                        if (actionGameList(&client_sockets[index]) < 0)
-                            handle_error_noexit("GET game/list");
-                    }
-                    else if (strncmp(buffer, "looking for bomberstudent servers", 33) == 0)
-                    {
-
-                        sprintf(response, "hello i'm a bomberstudent server.\n");
-                        response[strlen(response) + 1] = '\0';
-                        send(client_sockets[index], response, strlen(response), 0);
-                    }
-                    else
-                    {
-                        sprintf(response, "Unkowned command.\n"
-                                          "List of commands:\n"
-                                          " - 'looking for bomberstudent servers'\n"
-                                          " - 'GET maps/list'\n"
-                                          " - 'GET game/list'\n"
-                                          " - 'POST game/create'\n");
-                        response[strlen(response) + 1] = '\0';
-                        send(client_sockets[index], response, strlen(response), 0);
-                    }
+                    answerServer(client_sockets, index, response, buffer);
                 }
             }
         }
