@@ -38,14 +38,12 @@ int actionGameCreate(int *cFd)
 
     char content[tell];
     if (fread(content, 1, tell, gamesListFile) < 0)
-    {
         handle_error("fread actionGameCreate", -1);
-    }
 
     content[tell] = '\0';
     send(*cFd, content, strlen(content), 0);
 
-    /*char content[strlen(buffer)];
+    char content[strlen(buffer)];
     for (size_t i = 0; i < strlen(buffer) - 17; i++)
         content[i] = buffer[i + 17];
     printf("%s\n", content);
@@ -71,7 +69,7 @@ int actionGameCreate(int *cFd)
         send(*cFd, name->valuestring, strlen(name->valuestring), 0);
     }
 
-    cJSON_Delete(root);*/
+    cJSON_Delete(root);
     return 0;
 }
 
