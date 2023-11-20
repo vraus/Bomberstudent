@@ -36,7 +36,8 @@ int actionGameCreate(int *cFd)
     fseek(gamesListFile, 0, SEEK_SET);
 
     char content[tell];
-    if(fread(content, 1, tell, gamesListFile) < 0) {
+    if (fread(content, 1, tell, gamesListFile) < 0)
+    {
         handle_error("fread actionGameCreate", -1);
     }
 
@@ -157,20 +158,28 @@ int setupServerManager(Server *serverManager)
     return 0;
 }
 
-void answerServer(int *client_sockets, int index, char *response, char *buffer) {
+/**
+ * @brief Function to process the received message from a client
+ * @param client_socket FD of the client
+ * @param buffer message sent by the client
+ */
+int answerServer(int client_socket, char *buffer)
+{
+    char *response = (char *)calloc(256, sizeof(char));
+
     if (strncmp(buffer, "POST game/create", 16) == 0)
     {
-        if (actionGameCreate(&client_sockets[index]) < 0)
+        if (actionGameCreate(&client_socket) < 0)
             handle_error_noexit("POST game/create");
     }
     else if (strncmp(buffer, "GET maps/list", 13) == 0)
     {
-        if (actionMapsList(&client_sockets[index]) < 0)
+        if (actionMapsList(&client_socket) < 0)
             handle_error_noexit("GET maps/list");
     }
     else if (strncmp(buffer, "GET game/list", 13) == 0)
     {
-        if (actionGameList(&client_sockets[index]) < 0)
+        if (actionGameList(&client_socket) < 0)
             handle_error_noexit("GET game/list");
     }
     else if (strncmp(buffer, "looking for bomberstudent servers", 33) == 0)
@@ -178,19 +187,22 @@ void answerServer(int *client_sockets, int index, char *response, char *buffer) 
 
         sprintf(response, "hello i'm a bomberstudent server.\n");
         response[strlen(response) + 1] = '\0';
-        send(client_sockets[index], response, strlen(response), 0);
+        send(client_socket, response, strlen(response), 0);
     }
     else
     {
         sprintf(response, "Unkowned command.\n"
-                            "List of commands:\n"
-                            " - 'looking for bomberstudent servers'\n"
-                            " - 'GET maps/list'\n"
-                            " - 'GET game/list'\n"
-                            " - 'POST game/create'\n");
+                          "List of commands:\n"
+                          " - 'looking for bomberstudent servers'\n"
+                          " - 'GET maps/list'\n"
+                          " - 'GET game/list'\n"
+                          " - 'POST game/create'\n");
         response[strlen(response) + 1] = '\0';
-        send(client_sockets[index], response, strlen(response), 0);
+        send(client_socket, response, strlen(response), 0);
+        handle_error("incorrect request", -1);
     }
+
+    return 0;
 }
 
 int main(int argc, char *argv[])
@@ -276,10 +288,10 @@ int main(int argc, char *argv[])
                 }
                 else
                 {
-                    char *response = (char *)calloc(256, sizeof(char));
                     buffer[valread] = '\0';
                     // TODO: When received creates a UDP server in a pthread and connects the client fd to it
-                    answerServer(client_sockets, index, response, buffer);
+                    if (answerServer(client_sockets[index], buffer) < 0)
+                        handle_error_noexit("answerServer");
                 }
             }
         }
