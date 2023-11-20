@@ -18,13 +18,8 @@ void kill_handler(int n)
     exit(EXIT_SUCCESS);
 }
 
-/** @brief Function called when client send `POST game/create` request.
- *  @param cFd the client File descriptor
- *  @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
- */
-int actionGameCreate(int *cFd)
-{
-    FILE *gamesListFile = fopen(GAME_CREATE_PATH, "r++");
+int readJsonFile(int *cFd, char *pathJsonFile) {
+    FILE *gamesListFile = fopen(pathJsonFile, "r++");
     if (!gamesListFile)
         handle_error("fopen", -1);
 
@@ -37,13 +32,26 @@ int actionGameCreate(int *cFd)
     fseek(gamesListFile, 0, SEEK_SET);
 
     char content[tell];
-    if (fread(content, 1, tell, gamesListFile) < 0)
+    if(fread(content, 1, tell, gamesListFile) < 0) {
         handle_error("fread actionGameCreate", -1);
+    }
 
     content[tell] = '\0';
-    send(*cFd, content, strlen(content), 0);
+    if(send(*cFd, content, strlen(content), 0) < 0) {
+        handle_error("send actionGameCreate", -1);
+    }
 
-    char content[strlen(buffer)];
+    return 0;
+}
+
+/** @brief Function called when client send `POST game/create` request.
+ *  @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
+ */
+int actionGameCreate(int *cFd)
+{
+    readJsonFile(cFd, GAME_CREATE_PATH);
+
+    /*char content[strlen(buffer)];
     for (size_t i = 0; i < strlen(buffer) - 17; i++)
         content[i] = buffer[i + 17];
     printf("%s\n", content);
@@ -69,68 +77,7 @@ int actionGameCreate(int *cFd)
         send(*cFd, name->valuestring, strlen(name->valuestring), 0);
     }
 
-    cJSON_Delete(root);
-    return 0;
-}
-
-/**
- * @brief Function called when client uses command `GET game/list`.
- * @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
- */
-int actionGameList(int *cFd)
-{
-    FILE *gamesListFile = fopen(GAME_LIST_PATH, "r");
-    if (!gamesListFile)
-        handle_error("fopen", -1);
-
-    // BUG: Make segfault when CTRL+C
-    /*if (add_file(gamesListFile) < 0)
-        handle_error("add_file", -1);*/
-
-    fseek(gamesListFile, 0, SEEK_END);
-    long tell = ftell(gamesListFile);
-    fseek(gamesListFile, 0, SEEK_SET);
-
-    char content[tell];
-
-    if (fread(content, 1, sizeof(content), gamesListFile) < 0)
-        handle_error("fread", -1);
-    fclose(gamesListFile);
-
-    content[tell] = '\0';
-    send(*cFd, content, strlen(content), 0);
-
-    return 0;
-}
-
-/**
- * @brief Function called when client uses command `GET maps/list`.
- * @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
- */
-int actionMapsList(int *cFd)
-{
-    FILE *mapsListFile = fopen(MAPS_LIST_PATH, "r");
-    if (!mapsListFile)
-        handle_error("fopen", -1);
-
-    // BUG: Make segfault when CTRL+C
-    /*if (add_file(gamesListFile) < 0)
-        handle_error("add_file", -1);*/
-
-    fseek(mapsListFile, 0, SEEK_END);
-    long tell = ftell(mapsListFile);
-    fseek(mapsListFile, 0, SEEK_SET);
-
-    char content[tell];
-
-    if (fread(content, 1, sizeof(content), mapsListFile) < 0)
-        handle_error("fread", -1);
-
-    fclose(mapsListFile);
-
-    content[tell] = '\0';
-    send(*cFd, content, strlen(content), 0);
-
+    cJSON_Delete(root);*/
     return 0;
 }
 
@@ -173,12 +120,12 @@ int answerServer(int client_socket, char *buffer)
     }
     else if (strncmp(buffer, "GET maps/list", 13) == 0)
     {
-        if (actionMapsList(&client_socket) < 0)
+        if (readJsonFile(&client_socket, MAPS_LIST_PATH) < 0)
             handle_error_noexit("GET maps/list");
     }
     else if (strncmp(buffer, "GET game/list", 13) == 0)
     {
-        if (actionGameList(&client_socket) < 0)
+        if (readJsonFile(&client_socket, GAME_LIST_PATH) < 0)
             handle_error_noexit("GET game/list");
     }
     else if (strncmp(buffer, "looking for bomberstudent servers", 33) == 0)
@@ -245,8 +192,6 @@ int main(int argc, char *argv[])
                 max_sd = sd;
         }
 
-        // TODO: Modifier le traitement de la connection pour faire en sorte que chaque client soit traité
-        //  par un thread et non dans un fd_set
         // Await client activity
         activity = select(max_sd + 1, &read_fds, NULL, NULL, NULL);
         if (activity < 0)
@@ -290,7 +235,6 @@ int main(int argc, char *argv[])
                 else
                 {
                     buffer[valread] = '\0';
-                    // TODO: When received creates a UDP server in a pthread and connects the client fd to it
                     if (answerServer(client_sockets[index], buffer) < 0)
                         handle_error_noexit("answerServer");
                 }
