@@ -19,6 +19,7 @@ void kill_handler(int n)
 }
 
 /** @brief Function called when client send `POST game/create` request.
+ *  @param cFd the client File descriptor
  *  @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
  */
 int actionGameCreate(int *cFd)
@@ -246,6 +247,8 @@ int main(int argc, char *argv[])
                 max_sd = sd;
         }
 
+        // TODO: Modifier le traitement de la connection pour faire en sorte que chaque client soit traité
+        //  par un thread et non dans un fd_set
         // Await client activity
         activity = select(max_sd + 1, &read_fds, NULL, NULL, NULL);
         if (activity < 0)
