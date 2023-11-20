@@ -18,7 +18,8 @@ void kill_handler(int n)
     exit(EXIT_SUCCESS);
 }
 
-int readJsonFile(int *cFd, char *pathJsonFile) {
+// FIXME: make that function work
+char* readJsonFile(int *cFd, char *pathJsonFile) {
     FILE *gamesListFile = fopen(pathJsonFile, "r++");
     if (!gamesListFile)
         handle_error("fopen", -1);
@@ -35,13 +36,17 @@ int readJsonFile(int *cFd, char *pathJsonFile) {
     if(fread(content, 1, tell, gamesListFile) < 0) {
         handle_error("fread actionGameCreate", -1);
     }
+    // XXX: CJson_Parse needed ???
 
     content[tell] = '\0';
-    if(send(*cFd, content, strlen(content), 0) < 0) {
-        handle_error("send actionGameCreate", -1);
-    }
 
-    return 0;
+    // XXX: send enlever de cette fonction donc remodifier la fonction answerServer
+    /*if(send(*cFd, content, strlen(content), 0) < 0) {
+        handle_error("send actionGameCreate", -1);
+    }*/
+
+    // XXX: return le content du json
+    return content;
 }
 
 /** @brief Function called when client send `POST game/create` request.
@@ -49,11 +54,23 @@ int readJsonFile(int *cFd, char *pathJsonFile) {
  */
 int actionGameCreate(int *cFd)
 {
-    readJsonFile(cFd, GAME_CREATE_PATH);
+    char *buffer = readJsonFile(cFd, GAME_LIST_PATH); //change pour le bon path
 
-    /*char content[strlen(buffer)];
+    cJSON *json = cJSON_Parse(buffer); 
+    if (json == NULL) { 
+        const char *error_ptr = cJSON_GetErrorPtr(); 
+        if (error_ptr != NULL) { 
+            printf("Error: %s\n", error_ptr); 
+        } 
+        cJSON_Delete(json); 
+        return 1; 
+    } 
+
+    // récupérer le json juste après POST game/create
+    char content[strlen(buffer)];
     for (size_t i = 0; i < strlen(buffer) - 17; i++)
         content[i] = buffer[i + 17];
+    content[strlen(buffer)-17] = '\0';
     printf("%s\n", content);
     cJSON *root = cJSON_Parse(content);
 
@@ -66,18 +83,19 @@ int actionGameCreate(int *cFd)
         return 1;
     }
 
-    printf("%s\n", content);
+    cJSON_ReplaceItemInObjectCaseSensitive(json, "games", cJSON_CreateString(content)); 
+    char *json_str = cJSON_Print(json); 
     send(*cFd, content, strlen(content), 0);
 
     // access the JSON data
-    cJSON *name = cJSON_GetObjectItemCaseSensitive(root, "name");
-    if (cJSON_IsString(name) && (name->valuestring != NULL))
+    //cJSON *name = cJSON_GetObjectItemCaseSensitive(root, "games");
+    /*if (cJSON_IsString(name) && (name->valuestring != NULL))
     {
         printf("Name: %s\n", name->valuestring);
         send(*cFd, name->valuestring, strlen(name->valuestring), 0);
-    }
-
-    cJSON_Delete(root);*/
+    }*/
+    cJSON_Delete(json);
+    cJSON_Delete(root);
     return 0;
 }
 
