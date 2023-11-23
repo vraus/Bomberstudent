@@ -18,23 +18,23 @@ void kill_handler(int n)
     exit(EXIT_SUCCESS);
 }
 
-int readJsonFile(int *cFd, char *pathJsonFile, char **content)
+int readJsonFile(int *cFd, char *path_json_file, char **content)
 {
-    FILE *gamesListFile = fopen(pathJsonFile, "r++");
-    if (!gamesListFile)
+    FILE *games_list_file = fopen(path_json_file, "r++");
+    if (!games_list_file)
         handle_error("fopen", -1);
 
-    fseek(gamesListFile, 0, SEEK_END);
-    long tell = ftell(gamesListFile);
-    fseek(gamesListFile, 0, SEEK_SET);
+    fseek(games_list_file, 0, SEEK_END);
+    long tell = ftell(games_list_file);
+    fseek(games_list_file, 0, SEEK_SET);
 
     *content = (char *)calloc(tell, sizeof(char));
-    if (fread(*content, 1, tell, gamesListFile) < 0)
+    if (fread(*content, 1, tell, games_list_file) < 0)
         handle_error("freadJsonFile", -1);
 
     content[0][tell] = '\0';
 
-    fclose(gamesListFile);
+    fclose(games_list_file);
     return 0;
 }
 
@@ -43,19 +43,19 @@ int readJsonFile(int *cFd, char *pathJsonFile, char **content)
  */
 int actionGameCreate(int *cFd)
 {
-    FILE *gameCreateJson = fopen(GAME_LIST_PATH, "r");
-    if (gameCreateJson == NULL)
+    FILE *game_create_json = fopen(GAME_LIST_PATH, "r");
+    if (game_create_json == NULL)
         handle_error("fopen gameCreateJson r", -1);
 
-    fseek(gameCreateJson, 0, SEEK_END);
-    long tell = ftell(gameCreateJson);
-    fseek(gameCreateJson, 0, SEEK_SET);
+    fseek(game_create_json, 0, SEEK_END);
+    long tell = ftell(game_create_json);
+    fseek(game_create_json, 0, SEEK_SET);
 
     char *content = (char *)calloc(tell, sizeof(char));
-    if (fread(content, 1, tell, gameCreateJson) < 0)
+    if (fread(content, 1, tell, game_create_json) < 0)
         handle_error("fread acionGameCreate", -1);
 
-    fclose(gameCreateJson);
+    fclose(game_create_json);
 
     // Parse the actual gamesList json file
     cJSON *root = cJSON_Parse(content);
@@ -86,8 +86,8 @@ int actionGameCreate(int *cFd)
     }
 
     // Indents nbGameList
-    cJSON *nbGamesList = cJSON_GetObjectItemCaseSensitive(root, "nbGamesList");
-    cJSON_ReplaceItemInObjectCaseSensitive(root, "nbGamesList", cJSON_CreateNumber(nbGamesList->valueint + 1));
+    cJSON *nb_games_list = cJSON_GetObjectItemCaseSensitive(root, "nbGamesList");
+    cJSON_ReplaceItemInObjectCaseSensitive(root, "nbGamesList", cJSON_CreateNumber(nb_games_list->valueint + 1));
 
     cJSON *array_games = cJSON_GetObjectItemCaseSensitive(root, "games");
     cJSON *new_game_data = cJSON_CreateObject();
@@ -98,14 +98,14 @@ int actionGameCreate(int *cFd)
     cJSON_AddItemToArray(array_games, new_game_data);
 
     char *json_str = cJSON_Print(root);
-    gameCreateJson = fopen(GAME_LIST_PATH, "w");
+    game_create_json = fopen(GAME_LIST_PATH, "w");
 
-    if (gameCreateJson == NULL)
+    if (game_create_json == NULL)
         handle_error("fopen gameCreateJson w", -1);
 
     printf("%s\n", json_str);
-    fputs(json_str, gameCreateJson);
-    fclose(gameCreateJson);
+    fputs(json_str, game_create_json);
+    fclose(game_create_json);
 
     cJSON_Delete(root);
     cJSON_Delete(new_game);
@@ -117,19 +117,19 @@ int actionGameCreate(int *cFd)
  * @brief Function used to setup the main Server. This will instantiate
  * using `service.h` functions to bind the socket.
  * Then `setupServerManager()` put the given server into listening mode.
- * @param serverManager `struct Server` pointing to the server to setup.
+ * @param server_manager `struct Server` pointing to the server to setup.
  * @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
  */
-int setupServerManager(Server *serverManager)
+int setupServerManager(Server *server_manager)
 {
-    if (init_server(serverManager, 42069) < 0)
+    if (init_server(server_manager, 42069) < 0)
         handle_error("init_server", -1);
 
-    if (add_server(serverManager) < 0)
+    if (add_server(server_manager) < 0)
         handle_error("add_server", -1);
 
-    if (listen(serverManager->serverSocket, MAX_CLIENTS) < 0)
-        handle_error("serverManager: listen", -1);
+    if (listen(server_manager->server_socket, MAX_CLIENTS) < 0)
+        handle_error("server_manager: listen", -1);
 
     printf("I'm listening...\n");
 
@@ -186,13 +186,13 @@ int answerServer(int client_socket, char *buffer)
 int main(int argc, char *argv[])
 {
     signal(SIGINT, kill_handler);
-    Server serverManager;
+    Server server_manager;
     port = 42069;
 
     int client_sockets[MAX_CLIENTS];
     int new_socket;
-    struct sockaddr_in cAddr;
-    socklen_t cAddr_len = sizeof(cAddr);
+    struct sockaddr_in c_addr;
+    socklen_t c_addr_len = sizeof(c_addr);
 
     fd_set read_fds;
 
@@ -204,14 +204,14 @@ int main(int argc, char *argv[])
     for (index = 0; index < MAX_CLIENTS; index++)
         client_sockets[index] = 0;
 
-    if (setupServerManager(&serverManager) < 0)
-        handle_error("serverManager: setupServerManager", -1);
+    if (setupServerManager(&server_manager) < 0)
+        handle_error("server_manager: setupServerManager", -1);
 
     for (;;)
     {
         FD_ZERO(&read_fds);
-        FD_SET(serverManager.serverSocket, &read_fds);
-        int max_sd = serverManager.serverSocket;
+        FD_SET(server_manager.server_socket, &read_fds);
+        int max_sd = server_manager.server_socket;
 
         for (index = 0; index < MAX_CLIENTS; index++) // Add clients to the read_fds
         {
@@ -230,9 +230,9 @@ int main(int argc, char *argv[])
             handle_error("activity: select", -1);
 
         // Accept all new connexions detected
-        if (FD_ISSET(serverManager.serverSocket, &read_fds))
+        if (FD_ISSET(server_manager.server_socket, &read_fds))
         {
-            if ((new_socket = accept(serverManager.serverSocket, (struct sockaddr *)&cAddr, (socklen_t *)&cAddr_len)) < 0)
+            if ((new_socket = accept(server_manager.server_socket, (struct sockaddr *)&c_addr, (socklen_t *)&c_addr_len)) < 0)
                 handle_error("new_socket: accept", -1);
 
             // Add the new client to the client_sockets group
@@ -258,8 +258,8 @@ int main(int argc, char *argv[])
                 if ((valread = read(sd, buffer, sizeof(buffer))) == 0)
                 {
                     // Disconnects the client
-                    getpeername(sd, (struct sockaddr *)&cAddr, (socklen_t *)&cAddr_len);
-                    printf("Host Disconnected, ip %s, port %d\n", inet_ntoa(cAddr.sin_addr), ntohs(cAddr.sin_port));
+                    getpeername(sd, (struct sockaddr *)&c_addr, (socklen_t *)&c_addr_len);
+                    printf("Host Disconnected, ip %s, port %d\n", inet_ntoa(c_addr.sin_addr), ntohs(c_addr.sin_port));
                     close(sd);
                     client_sockets[index] = 0;
                     num_clients--;

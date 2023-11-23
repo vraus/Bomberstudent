@@ -1,15 +1,15 @@
 #include "allocationsManager.h"
 
-AllocationManager allocManager = {0};
+AllocationManager alloc_manager = {0};
 
 int add_server(Server *server)
 {
-    if (allocManager.num_pservers < MAX_PSERVERS)
+    if (alloc_manager.num_pservers < MAX_PSERVERS)
     {
-        allocManager.num_pservers++;
-        Server **new_pserver = realloc(allocManager.pservers, allocManager.num_pservers * sizeof(Server *));
+        alloc_manager.num_pservers++;
+        Server **new_pserver = realloc(alloc_manager.pservers, alloc_manager.num_pservers * sizeof(Server *));
         if (new_pserver != NULL)
-            allocManager.pservers = new_pserver;
+            alloc_manager.pservers = new_pserver;
         else
             handle_error("new_pserver realloc", -1);
     }
@@ -23,18 +23,18 @@ int add_server(Server *server)
 
 int close_server(Server *server)
 {
-    for (int i = 0; i < allocManager.num_pservers; i++)
+    for (int i = 0; i < alloc_manager.num_pservers; i++)
     {
-        if (allocManager.pservers[i] == server)
+        if (alloc_manager.pservers[i] == server)
         {
-            close(allocManager.pservers[i]->serverSocket);
-            close(server->serverSocket);
-            free(allocManager.pservers[i]);
+            close(alloc_manager.pservers[i]->server_socket);
+            close(server->server_socket);
+            free(alloc_manager.pservers[i]);
             free(server);
-            allocManager.num_pservers--;
-            Server **update_servers = realloc(allocManager.pservers, allocManager.num_pservers * sizeof(Server *));
+            alloc_manager.num_pservers--;
+            Server **update_servers = realloc(alloc_manager.pservers, alloc_manager.num_pservers * sizeof(Server *));
             if (update_servers != NULL)
-                allocManager.pservers = update_servers;
+                alloc_manager.pservers = update_servers;
             else
                 handle_error("update_servers realloc", -1);
 
@@ -46,12 +46,12 @@ int close_server(Server *server)
 
 int add_string(char *string)
 {
-    if (allocManager.num_pstrings < MAX_PSTRINGS)
+    if (alloc_manager.num_pstrings < MAX_PSTRINGS)
     {
-        allocManager.num_pstrings++;
-        char **new_pstring = realloc(allocManager.pstrings, allocManager.num_pstrings * sizeof(char *));
+        alloc_manager.num_pstrings++;
+        char **new_pstring = realloc(alloc_manager.pstrings, alloc_manager.num_pstrings * sizeof(char *));
         if (new_pstring != NULL)
-            allocManager.pstrings = new_pstring;
+            alloc_manager.pstrings = new_pstring;
         else
             handle_error("new_pstrings realloc", -1);
     }
@@ -65,16 +65,16 @@ int add_string(char *string)
 
 int free_string(char *string)
 {
-    for (int i = 0; i < allocManager.num_pstrings; i++)
+    for (int i = 0; i < alloc_manager.num_pstrings; i++)
     {
-        if (allocManager.pstrings[i] == string)
+        if (alloc_manager.pstrings[i] == string)
         {
-            free(allocManager.pstrings[i]);
+            free(alloc_manager.pstrings[i]);
             free(string);
-            allocManager.num_pstrings--;
-            char **update_strings = realloc(allocManager.pstrings, allocManager.num_pstrings * sizeof(char *));
+            alloc_manager.num_pstrings--;
+            char **update_strings = realloc(alloc_manager.pstrings, alloc_manager.num_pstrings * sizeof(char *));
             if (update_strings != NULL)
-                allocManager.pstrings = update_strings;
+                alloc_manager.pstrings = update_strings;
             else
                 handle_error("update_strings realloc", -1);
         }
@@ -84,12 +84,12 @@ int free_string(char *string)
 
 int add_file(FILE *file)
 {
-    if (allocManager.num_pfiles < MAX_PFILES)
+    if (alloc_manager.num_pfiles < MAX_PFILES)
     {
-        allocManager.num_pfiles++;
-        FILE **new_pfile = realloc(allocManager.pfiles, allocManager.num_pfiles * sizeof(FILE *));
+        alloc_manager.num_pfiles++;
+        FILE **new_pfile = realloc(alloc_manager.pfiles, alloc_manager.num_pfiles * sizeof(FILE *));
         if (new_pfile != NULL)
-            allocManager.pfiles = new_pfile;
+            alloc_manager.pfiles = new_pfile;
         else
             handle_error("new_pfile realloc", -1);
     }
@@ -103,16 +103,16 @@ int add_file(FILE *file)
 
 int fclose_file(FILE *file)
 {
-    for (int i = 0; i < allocManager.num_pfiles; i++)
+    for (int i = 0; i < alloc_manager.num_pfiles; i++)
     {
-        if (allocManager.pfiles[i] == file)
+        if (alloc_manager.pfiles[i] == file)
         {
-            fclose(allocManager.pfiles[i]);
+            fclose(alloc_manager.pfiles[i]);
             fclose(file);
-            allocManager.num_pfiles--;
-            FILE **update_files = realloc(allocManager.pfiles, allocManager.num_pfiles * sizeof(FILE *));
+            alloc_manager.num_pfiles--;
+            FILE **update_files = realloc(alloc_manager.pfiles, alloc_manager.num_pfiles * sizeof(FILE *));
             if (update_files != NULL)
-                allocManager.pfiles = update_files;
+                alloc_manager.pfiles = update_files;
             else
                 handle_error("update_file realloc", -1);
         }
@@ -124,12 +124,12 @@ int fclose_file(FILE *file)
 /*
 int add_json_t(json_t *file)
 {
-    if (allocManager.num_pjson_t < MAX_PFILES)
+    if (alloc_manager.num_pjson_t < MAX_PFILES)
     {
-        allocManager.num_pjson_t++;
-        json_t **new_pjson_t = realloc(allocManager.pjson_t, allocManager.num_pjson_t * sizeof(json_t *));
+        alloc_manager.num_pjson_t++;
+        json_t **new_pjson_t = realloc(alloc_manager.pjson_t, alloc_manager.num_pjson_t * sizeof(json_t *));
         if (new_pjson_t != NULL)
-            allocManager.pjson_t = new_pjson_t;
+            alloc_manager.pjson_t = new_pjson_t;
         else
             handle_error("new_pjson_t realloc", -1);
     }
@@ -143,16 +143,16 @@ int add_json_t(json_t *file)
 
 int free_json_t(json_t *pjson_t)
 {
-    for (int i = 0; i < allocManager.num_pjson_t; i++)
+    for (int i = 0; i < alloc_manager.num_pjson_t; i++)
     {
-        if (allocManager.pjson_t[i] == pjson_t)
+        if (alloc_manager.pjson_t[i] == pjson_t)
         {
-            free(allocManager.pjson_t[i]);
+            free(alloc_manager.pjson_t[i]);
             free(pjson_t);
-            allocManager.num_pjson_t--;
-            json_t **update_json_t = realloc(allocManager.pjson_t, allocManager.num_pjson_t * sizeof(json_t *));
+            alloc_manager.num_pjson_t--;
+            json_t **update_json_t = realloc(alloc_manager.pjson_t, alloc_manager.num_pjson_t * sizeof(json_t *));
             if (update_json_t != NULL)
-                allocManager.pjson_t = update_json_t;
+                alloc_manager.pjson_t = update_json_t;
             else
                 handle_error("update_json_t realloc", -1);
         }
@@ -163,18 +163,18 @@ int free_json_t(json_t *pjson_t)
 // FIXME: Modify the free to correspond to the new library
 void free_all_allocations(void)
 {
-    for (int i = 0; i < allocManager.num_pservers; i++)
-        free(allocManager.pservers[i]);
-    for (int i = 0; i < allocManager.num_pstrings; i++)
-        free(allocManager.pstrings[i]);
-    for (int i = 0; i < allocManager.num_pfiles; i++)
-        fclose(allocManager.pfiles[i]);
-    // for (int i = 0; i < allocManager.num_pjson_t; i++)
-    //    free(allocManager.pjson_t[i]);
+    for (int i = 0; i < alloc_manager.num_pservers; i++)
+        free(alloc_manager.pservers[i]);
+    for (int i = 0; i < alloc_manager.num_pstrings; i++)
+        free(alloc_manager.pstrings[i]);
+    for (int i = 0; i < alloc_manager.num_pfiles; i++)
+        fclose(alloc_manager.pfiles[i]);
+    // for (int i = 0; i < alloc_manager.num_pjson_t; i++)
+    //    free(alloc_manager.pjson_t[i]);
 
-    free(allocManager.pservers);
-    free(allocManager.pstrings);
-    free(allocManager.pfiles);
-    // free(allocManager.pjson_t);
+    free(alloc_manager.pservers);
+    free(alloc_manager.pstrings);
+    free(alloc_manager.pfiles);
+    // free(alloc_manager.pjson_t);
     printf("\nEverything was freed\n");
 }

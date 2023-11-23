@@ -35,14 +35,14 @@
 
 /**
  * @brief Structure for each Server
- * @param serverSocket `int` Server File Descriptor used for the socket
- * @param serverAddr `sockaddr_in` An instance of the sockaddr_in struct
+ * @param server_socket `int` Server File Descriptor used for the socket
+ * @param server_addr `sockaddr_in` An instance of the sockaddr_in struct
  * @param protocol `char *` Set to `t` if it's a TCP server or `u` if it's a UDP server
  */
 typedef struct
 {
-    int serverSocket;
-    struct sockaddr_in serverAddr;
+    int server_socket;
+    struct sockaddr_in server_addr;
     char *protocol;
 } Server;
 
