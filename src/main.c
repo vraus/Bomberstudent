@@ -30,7 +30,7 @@ int readJsonFile(int *cFd, char *pathJsonFile, char **content)
 
     *content = (char *)calloc(tell, sizeof(char));
     if (fread(*content, 1, tell, gamesListFile) < 0)
-        handle_error("fread actionGameCreate", -1);
+        handle_error("freadJsonFile", -1);
 
     content[0][tell] = '\0';
 
@@ -43,29 +43,21 @@ int readJsonFile(int *cFd, char *pathJsonFile, char **content)
  */
 int actionGameCreate(int *cFd)
 {
-    if (readJsonFile(cFd, GAME_LIST_PATH, &buffer) < 0)
-        handle_error("readJsonFile", -1);
+    FILE *gameCreateJson = fopen(GAME_LIST_PATH, "r");
+    if (gameCreateJson == NULL)
+        handle_error("fopen gameCreateJson r", -1);
 
-    cJSON *json = cJSON_Parse(buffer);
-    if (json == NULL)
-    {
-        const char *error_ptr = cJSON_GetErrorPtr();
-        if (error_ptr != NULL)
-        {
-            printf("Error: %s\n", error_ptr);
-        }
-        cJSON_Delete(json);
-        return 1;
-    }
+    fseek(gameCreateJson, 0, SEEK_END);
+    long tell = ftell(gameCreateJson);
+    fseek(gameCreateJson, 0, SEEK_SET);
 
-    // récupérer le json juste après POST game/create
-    char content[strlen(buffer)];
-    for (size_t i = 0; i < strlen(buffer) - 17; i++)
-        content[i] = buffer[i + 17];
-    content[strlen(buffer) - 17] = '\0';
-    printf("%s\n", content);
+    char *content = (char *)calloc(tell, sizeof(char));
+    if (fread(content, 1, tell, gameCreateJson) < 0)
+        handle_error("fread acionGameCreate", -1);
+
+    fclose(gameCreateJson);
+
     cJSON *root = cJSON_Parse(content);
-
     if (root == NULL)
     {
         const char *error_ptr = cJSON_GetErrorPtr();
@@ -75,12 +67,39 @@ int actionGameCreate(int *cFd)
         return 1;
     }
 
-    cJSON_ReplaceItemInObjectCaseSensitive(json, "games", cJSON_CreateString(content));
-    char *json_str = cJSON_Print(json);
-    send(*cFd, content, strlen(content), 0);
+    char buff[strlen(buffer) - 17];
+    for (int i = 0; i < strlen(buffer) - 17; i++)
+        buff[i] = buffer[i + 17];
 
-    cJSON_Delete(json);
-    cJSON_Delete(root);
+    buff[strlen(buff) - 1] = '\0';
+
+    cJSON *newGame = cJSON_Parse(buff);
+    if (newGame == NULL)
+    {
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL)
+            handle_error_noexit("Error\n");
+        cJSON_Delete(newGame);
+        return 1;
+    }
+
+    cJSON *nbGamesList = cJSON_GetObjectItemCaseSensitive(root, "nbGamesList");
+    int new_nbGames = nbGamesList->valueint + 1;
+    printf("\nnew_nbGames: %d\n", new_nbGames);
+    cJSON_ReplaceItemInObjectCaseSensitive(root, "nbGamesList", cJSON_CreateNumber(new_nbGames));
+
+    char *json_str = cJSON_Print(root);
+    gameCreateJson = fopen(GAME_LIST_PATH, "w");
+    if (gameCreateJson == NULL)
+        handle_error("fopen gameCreateJson w", -1);
+
+    printf("%s\n", json_str);
+    fputs(json_str, gameCreateJson);
+    fclose(gameCreateJson);
+
+    cJSON_free(root);
+    cJSON_free(newGame);
+
     return 0;
 }
 

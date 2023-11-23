@@ -1,17 +1,17 @@
 {
-    "action": "game/create",
-    "statut": "201",
-    "message": "game created",
-    "nbPlayers": 0,
-    "mapId": 1,
-    "startPos": "3,2",
-    "player": {
-        "life": 100,
-        "speed": 1,
-        "nbClassicBomb": 2,
-        "nbMine": 0,
-        "nbRemoteBomb": 1,
-        "impactDist": 2,
-        "invincible": false
-    }
+	"action":	"game/create",
+	"statut":	"201",
+	"message":	"game created",
+	"nbPlayers":	0,
+	"mapId":	1,
+	"startPos":	"3,2",
+	"player":	{
+		"life":	100,
+		"speed":	1,
+		"nbClassicBomb":	2,
+		"nbMine":	0,
+		"nbRemoteBomb":	1,
+		"impactDist":	2,
+		"invincible":	false
+	}
 }

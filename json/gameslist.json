@@ -1,7 +1,7 @@
 {
-    "action": "game/list",
-    "statut": "200",
-    "message": "ok",
-    "nbGamesList": 1,
-    "games": []
+	"action":	"game/list",
+	"statut":	"200",
+	"message":	"ok",
+	"nbGamesList":	0,
+	"games":	[]
 }
