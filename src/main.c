@@ -18,28 +18,23 @@ void kill_handler(int n)
     exit(EXIT_SUCCESS);
 }
 
-// FIXME: make that function work
-int readJsonFile(int *cFd, char *pathJsonFile, char *content) {
+int readJsonFile(int *cFd, char *pathJsonFile, char **content)
+{
     FILE *gamesListFile = fopen(pathJsonFile, "r++");
     if (!gamesListFile)
         handle_error("fopen", -1);
-
-    // BUG: Make segfault when CTRL+C
-    /*if (add_file(gamesListFile) < 0)
-        handle_error("add_file", -1);*/
 
     fseek(gamesListFile, 0, SEEK_END);
     long tell = ftell(gamesListFile);
     fseek(gamesListFile, 0, SEEK_SET);
 
-    content =(char*) calloc(tell, sizeof(char));
-    if(fread(content, 1, tell, gamesListFile) < 0) {
+    *content = (char *)calloc(tell, sizeof(char));
+    if (fread(*content, 1, tell, gamesListFile) < 0)
         handle_error("fread actionGameCreate", -1);
-    }
-    // XXX: CJson_Parse needed ???
 
-    content[tell] = '\0';
+    content[0][tell] = '\0';
 
+    fclose(gamesListFile);
     return 0;
 }
 
@@ -48,24 +43,26 @@ int readJsonFile(int *cFd, char *pathJsonFile, char *content) {
  */
 int actionGameCreate(int *cFd)
 {
-    if(readJsonFile(cFd, GAME_LIST_PATH, buffer) < 0)
+    if (readJsonFile(cFd, GAME_LIST_PATH, &buffer) < 0)
         handle_error("readJsonFile", -1);
 
-    cJSON *json = cJSON_Parse(buffer); 
-    if (json == NULL) { 
-        const char *error_ptr = cJSON_GetErrorPtr(); 
-        if (error_ptr != NULL) { 
-            printf("Error: %s\n", error_ptr); 
-        } 
-        cJSON_Delete(json); 
-        return 1; 
-    } 
+    cJSON *json = cJSON_Parse(buffer);
+    if (json == NULL)
+    {
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL)
+        {
+            printf("Error: %s\n", error_ptr);
+        }
+        cJSON_Delete(json);
+        return 1;
+    }
 
     // récupérer le json juste après POST game/create
     char content[strlen(buffer)];
     for (size_t i = 0; i < strlen(buffer) - 17; i++)
         content[i] = buffer[i + 17];
-    content[strlen(buffer)-17] = '\0';
+    content[strlen(buffer) - 17] = '\0';
     printf("%s\n", content);
     cJSON *root = cJSON_Parse(content);
 
@@ -78,17 +75,10 @@ int actionGameCreate(int *cFd)
         return 1;
     }
 
-    cJSON_ReplaceItemInObjectCaseSensitive(json, "games", cJSON_CreateString(content)); 
-    char *json_str = cJSON_Print(json); 
+    cJSON_ReplaceItemInObjectCaseSensitive(json, "games", cJSON_CreateString(content));
+    char *json_str = cJSON_Print(json);
     send(*cFd, content, strlen(content), 0);
 
-    // access the JSON data
-    //cJSON *name = cJSON_GetObjectItemCaseSensitive(root, "games");
-    /*if (cJSON_IsString(name) && (name->valuestring != NULL))
-    {
-        printf("Name: %s\n", name->valuestring);
-        send(*cFd, name->valuestring, strlen(name->valuestring), 0);
-    }*/
     cJSON_Delete(json);
     cJSON_Delete(root);
     return 0;
@@ -133,12 +123,12 @@ int answerServer(int client_socket, char *buffer)
     }
     else if (strncmp(buffer, "GET maps/list", 13) == 0)
     {
-        if (readJsonFile(&client_socket, MAPS_LIST_PATH, response) < 0)
+        if (readJsonFile(&client_socket, MAPS_LIST_PATH, &response) < 0)
             handle_error_noexit("GET maps/list");
     }
     else if (strncmp(buffer, "GET game/list", 13) == 0)
     {
-        if (readJsonFile(&client_socket, GAME_LIST_PATH, response) < 0)
+        if (readJsonFile(&client_socket, GAME_LIST_PATH, &response) < 0)
             handle_error_noexit("GET game/list");
     }
     else if (strncmp(buffer, "looking for bomberstudent servers", 33) == 0)
@@ -146,7 +136,6 @@ int answerServer(int client_socket, char *buffer)
 
         sprintf(response, "hello i'm a bomberstudent server.\n");
         response[strlen(response) + 1] = '\0';
-        send(client_socket, response, strlen(response), 0);
     }
     else
     {
@@ -157,9 +146,10 @@ int answerServer(int client_socket, char *buffer)
                           " - 'GET game/list'\n"
                           " - 'POST game/create'\n");
         response[strlen(response) + 1] = '\0';
-        send(client_socket, response, strlen(response), 0);
-        handle_error("incorrect request", -1);
     }
+
+    if (response != NULL)
+        send(client_socket, response, strlen(response), 0);
 
     return 0;
 }
