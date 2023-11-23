@@ -19,7 +19,7 @@ void kill_handler(int n)
 }
 
 // FIXME: make that function work
-char* readJsonFile(int *cFd, char *pathJsonFile) {
+int readJsonFile(int *cFd, char *pathJsonFile, char *content) {
     FILE *gamesListFile = fopen(pathJsonFile, "r++");
     if (!gamesListFile)
         handle_error("fopen", -1);
@@ -32,7 +32,7 @@ char* readJsonFile(int *cFd, char *pathJsonFile) {
     long tell = ftell(gamesListFile);
     fseek(gamesListFile, 0, SEEK_SET);
 
-    char content[tell];
+    content =(char*) calloc(tell, sizeof(char));
     if(fread(content, 1, tell, gamesListFile) < 0) {
         handle_error("fread actionGameCreate", -1);
     }
@@ -40,13 +40,7 @@ char* readJsonFile(int *cFd, char *pathJsonFile) {
 
     content[tell] = '\0';
 
-    // XXX: send enlever de cette fonction donc remodifier la fonction answerServer
-    /*if(send(*cFd, content, strlen(content), 0) < 0) {
-        handle_error("send actionGameCreate", -1);
-    }*/
-
-    // XXX: return le content du json
-    return content;
+    return 0;
 }
 
 /** @brief Function called when client send `POST game/create` request.
@@ -54,7 +48,8 @@ char* readJsonFile(int *cFd, char *pathJsonFile) {
  */
 int actionGameCreate(int *cFd)
 {
-    char *buffer = readJsonFile(cFd, GAME_LIST_PATH); //change pour le bon path
+    if(readJsonFile(cFd, GAME_LIST_PATH, buffer) < 0)
+        handle_error("readJsonFile", -1);
 
     cJSON *json = cJSON_Parse(buffer); 
     if (json == NULL) { 
@@ -138,12 +133,12 @@ int answerServer(int client_socket, char *buffer)
     }
     else if (strncmp(buffer, "GET maps/list", 13) == 0)
     {
-        if (readJsonFile(&client_socket, MAPS_LIST_PATH) < 0)
+        if (readJsonFile(&client_socket, MAPS_LIST_PATH, response) < 0)
             handle_error_noexit("GET maps/list");
     }
     else if (strncmp(buffer, "GET game/list", 13) == 0)
     {
-        if (readJsonFile(&client_socket, GAME_LIST_PATH) < 0)
+        if (readJsonFile(&client_socket, GAME_LIST_PATH, response) < 0)
             handle_error_noexit("GET game/list");
     }
     else if (strncmp(buffer, "looking for bomberstudent servers", 33) == 0)
