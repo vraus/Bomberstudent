@@ -87,18 +87,15 @@ int actionGameCreate(int *cFd)
 
     // Indents nbGameList
     cJSON *nbGamesList = cJSON_GetObjectItemCaseSensitive(root, "nbGamesList");
-    int new_nbGames = nbGamesList->valueint + 1;
-    printf("\nnew_nbGames: %d\n", new_nbGames);
-    cJSON_ReplaceItemInObjectCaseSensitive(root, "nbGamesList", cJSON_CreateNumber(new_nbGames));
+    cJSON_ReplaceItemInObjectCaseSensitive(root, "nbGamesList", cJSON_CreateNumber(nbGamesList->valueint + 1));
 
     cJSON *array_games = cJSON_GetObjectItemCaseSensitive(root, "games");
     cJSON *new_game_data = cJSON_CreateObject();
-    cJSON_AddStringToObject(new_game_data, "name", "game1");
-    cJSON_AddNumberToObject(new_game_data, "mapId", 1);
+    cJSON *new_game_name = cJSON_GetObjectItemCaseSensitive(new_game, "name");
+    cJSON *new_game_map = cJSON_GetObjectItemCaseSensitive(new_game, "mapId");
+    cJSON_AddStringToObject(new_game_data, "name", new_game_name->valuestring);
+    cJSON_AddNumberToObject(new_game_data, "mapId", new_game_map->valueint);
     cJSON_AddItemToArray(array_games, new_game_data);
-
-    char *array_games_str = cJSON_Print(array_games);
-    printf("\n%s\n", array_games_str);
 
     char *json_str = cJSON_Print(root);
     gameCreateJson = fopen(GAME_LIST_PATH, "w");
