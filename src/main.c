@@ -57,12 +57,13 @@ int actionGameCreate(int *cFd)
 
     fclose(gameCreateJson);
 
+    // Parse the actual gamesList json file
     cJSON *root = cJSON_Parse(content);
     if (root == NULL)
     {
         const char *error_ptr = cJSON_GetErrorPtr();
         if (error_ptr != NULL)
-            handle_error_noexit("Error\n");
+            handle_error_noexit("root: Error");
         cJSON_Delete(root);
         return 1;
     }
@@ -73,23 +74,35 @@ int actionGameCreate(int *cFd)
 
     buff[strlen(buff) - 1] = '\0';
 
-    cJSON *newGame = cJSON_Parse(buff);
-    if (newGame == NULL)
+    // Parse the client request of creating new game
+    cJSON *new_game = cJSON_Parse(buff);
+    if (new_game == NULL)
     {
         const char *error_ptr = cJSON_GetErrorPtr();
         if (error_ptr != NULL)
-            handle_error_noexit("Error\n");
-        cJSON_Delete(newGame);
+            handle_error_noexit("new_game: Error");
+        cJSON_Delete(new_game);
         return 1;
     }
 
+    // Indents nbGameList
     cJSON *nbGamesList = cJSON_GetObjectItemCaseSensitive(root, "nbGamesList");
     int new_nbGames = nbGamesList->valueint + 1;
     printf("\nnew_nbGames: %d\n", new_nbGames);
     cJSON_ReplaceItemInObjectCaseSensitive(root, "nbGamesList", cJSON_CreateNumber(new_nbGames));
 
+    cJSON *array_games = cJSON_GetObjectItemCaseSensitive(root, "games");
+    cJSON *new_game_data = cJSON_CreateObject();
+    cJSON_AddStringToObject(new_game_data, "name", "game1");
+    cJSON_AddNumberToObject(new_game_data, "mapId", 1);
+    cJSON_AddItemToArray(array_games, new_game_data);
+
+    char *array_games_str = cJSON_Print(array_games);
+    printf("\n%s\n", array_games_str);
+
     char *json_str = cJSON_Print(root);
     gameCreateJson = fopen(GAME_LIST_PATH, "w");
+
     if (gameCreateJson == NULL)
         handle_error("fopen gameCreateJson w", -1);
 
@@ -97,8 +110,8 @@ int actionGameCreate(int *cFd)
     fputs(json_str, gameCreateJson);
     fclose(gameCreateJson);
 
-    cJSON_free(root);
-    cJSON_free(newGame);
+    cJSON_Delete(root);
+    cJSON_Delete(new_game);
 
     return 0;
 }
