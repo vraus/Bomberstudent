@@ -2,15 +2,6 @@
 	"action":	"game/list",
 	"statut":	"200",
 	"message":	"ok",
-	"nbGamesList":	3,
-	"games":	[{
-			"name":	"game1",
-			"mapId":	1
-		}, {
-			"name":	"game1",
-			"mapId":	1
-		}, {
-			"name":	"myGame",
-			"mapId":	2
-		}]
+	"nbGamesList":	0,
+	"games":	[]
 }

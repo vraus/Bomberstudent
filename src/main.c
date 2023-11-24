@@ -94,6 +94,7 @@ int actionGameCreate(int *cFd)
     cJSON *new_game_name = cJSON_GetObjectItemCaseSensitive(new_game, "name");
     cJSON *new_game_map = cJSON_GetObjectItemCaseSensitive(new_game, "mapId");
     cJSON_AddStringToObject(new_game_data, "name", new_game_name->valuestring);
+    cJSON_AddNumberToObject(new_game_data, "nbPlayers", 1);
     cJSON_AddNumberToObject(new_game_data, "mapId", new_game_map->valueint);
     cJSON_AddItemToArray(array_games, new_game_data);
 
