@@ -43,6 +43,7 @@ int readJsonFile(int *cFd, char *path_json_file, char **content)
  */
 int actionGameCreate(int *cFd)
 {
+    // TODO: Voir si la méthode peut rentrer dans une fonction
     FILE *game_create_json = fopen(GAME_LIST_PATH, "r");
     if (game_create_json == NULL)
         handle_error("fopen gameCreateJson r", -1);
@@ -184,6 +185,8 @@ int answerServer(int client_socket, char *buffer)
     return 0;
 }
 
+// TODO: multithreader le server
+//  Enlever du gras
 int main(int argc, char *argv[])
 {
     signal(SIGINT, kill_handler);
