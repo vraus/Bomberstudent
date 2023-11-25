@@ -71,6 +71,7 @@ int read_json_file(int *cFd, char *path_json_file, char **content)
     return 0;
 }
 
+/** @brief Function to update the game file when a client connects to the game he chose. */
 int action_game_join(int *cFd, char *buffer)
 {
     char buff[strlen(buffer) - 15];
@@ -144,6 +145,7 @@ int action_game_join(int *cFd, char *buffer)
     return 0;
 }
 
+/** @brief Function to create the game file when client uses POST game/create. */
 int create_running_game_data(char *game_name, int *cFd)
 {
     const char *new_game_file = "json/";
@@ -190,6 +192,9 @@ int create_running_game_data(char *game_name, int *cFd)
     return 0;
 }
 
+/** @brief This function is used to manage a running game with a client and the json file of the game.
+ *  @note This function is yet to be done.
+ */
 int running_game(int *cFd, char *game_name)
 {
     const char *new_game_file = "json/";
