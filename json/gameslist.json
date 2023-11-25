@@ -1,6 +1,6 @@
 {
 	"action":	"game/list",
-	"statut":	"200",
+	"statut":	"20",
 	"message":	"ok",
 	"nbGamesList":	0,
 	"games":	[]
