@@ -139,6 +139,45 @@ int action_game_join(int *cFd, char *buffer)
     fputs(json_str, game);
     fclose(game);
 
+    FILE *games_list = fopen(GAME_LIST_PATH, "w");
+    fseek(games_list, 0, SEEK_END);
+    tell = ftell(games_list);
+    fseek(games_list, 0, SEEK_SET);
+
+    content = (char *)calloc(tell, sizeof(char));
+    if (fread(content, 1, tell, games_list) < 0)
+        handle_error("action_game_create(): fread", -1);
+
+    fclose(games_list);
+
+    cJSON *cj_games_list = cJSON_Parse(content);
+    if (cj_games_list != NULL)
+    {
+        cJSON *games = cJSON_GetObjectItemCaseSensitive(cj_games_list, "games");
+        if (games != NULL)
+        {
+            cJSON *element;
+            cJSON_ArrayForEach(element, games)
+            {
+                cJSON *element_name = cJSON_GetObjectItemCaseSensitive(element, "name");
+                printf("element_name: %s\n", element_name->valuestring);
+                if (strcmp(element_name->valuestring, game_name->valuestring) == 0)
+                {
+                    cJSON *element_nb_player = cJSON_GetObjectItemCaseSensitive(element, "nbPlayers");
+                    cJSON_ReplaceItemInObjectCaseSensitive(element_nb_player, "nbPlayers", cJSON_CreateNumber(element_nb_player->valueint + 1));
+                    char *json_print = cJSON_Print(cj_games_list);
+                    FILE *games_list = fopen(GAME_LIST_PATH, "w");
+                    if (games_list != NULL)
+                        fputs(json_print, games_list);
+                    fclose(games_list);
+                    break;
+                }
+            }
+        }
+        cJSON_Delete(games);
+    }
+
+    cJSON_Delete(cj_games_list);
     cJSON_Delete(root);
     cJSON_Delete(file_join_game);
 
