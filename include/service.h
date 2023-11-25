@@ -52,6 +52,6 @@ typedef struct
  * @param server: `Server *` Pointer to the server struct
  * @param port: `int` port on which the server will be listening to
  */
-int init_server(Server *server, int port);
+int init_server(Server *server, int port, int type);
 
 #endif

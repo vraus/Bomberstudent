@@ -1,9 +1,9 @@
 #include "service.h"
 
-int init_server(Server *server, int port)
+int init_server(Server *server, int port, int type)
 {
     int opt = 1;
-    server->server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    server->server_socket = socket(AF_INET, type, 0);
     if (server->server_socket < 0)
         handle_error("socket", -1);
 

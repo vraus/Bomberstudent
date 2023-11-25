@@ -17,8 +17,10 @@
 #define MAPS_LIST_PATH "json/mapslist.json"
 #define GAME_CREATE_PATH "json/gamecreate.json"
 
-int port = 0;
+int port = 42069;
 int num_clients = 0;
+
+int setup_server_socket(Server *server_manager, int port, int type);
 
 /** @brief Signal handler to free allocations when SIGINT on the main server */
 void kill_handler(int n)
@@ -27,6 +29,7 @@ void kill_handler(int n)
     exit(EXIT_SUCCESS);
 }
 
+/** @brief Reads a json file and sends it's content to the client file descriptor */
 int read_json_file(int *cFd, char *path_json_file, char **content)
 {
     FILE *games_list_file = fopen(path_json_file, "r++");
@@ -47,12 +50,34 @@ int read_json_file(int *cFd, char *path_json_file, char **content)
     return 0;
 }
 
+int create_threaded_udp(int *cFd)
+{
+    Server new_server;
+    int socket_accept;
+    char buffer[204];
+    char from_client[204];
+    if ((setup_server_socket(&new_server, port++, SOCK_DGRAM)) < 0)
+        handle_error("init_server", -1);
+
+    for (;;)
+    {
+        if ((socket_accept = accept(new_server.server_socket, NULL, NULL)) < 0)
+            handle_error("create_threaded_udp(): accept", -1);
+        if (send(socket_accept, &buffer, sizeof(buffer), 0) < 0)
+            handle_error("create_threaded_udp(): send", -1);
+        if (recv(socket_accept, &from_client, sizeof(from_client), 0) < 0)
+            handle_error("create_threaded_udp(): recv", -1);
+        printf("%s\n", from_client);
+    }
+    close(new_server.server_socket);
+    return 0;
+}
+
 /** @brief Function called when client send `POST game/create` request.
  *  @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
  */
 int action_game_create(int *cFd, char *buffer)
 {
-    // TODO: Voir si la méthode peut rentrer dans une fonction
     FILE *game_create_json = fopen(GAME_LIST_PATH, "r");
     if (game_create_json == NULL)
         handle_error("fopen game_create_json \"r\"", -1);
@@ -102,7 +127,7 @@ int action_game_create(int *cFd, char *buffer)
     if (cJSON_IsString(new_game_name) && (new_game_name->valuestring != NULL))
         cJSON_AddStringToObject(new_game_data, "name", new_game_name->valuestring);
     cJSON_AddNumberToObject(new_game_data, "nbPlayers", 1);
-    if (cJSON_IsNumber(new_game_map) && (new_game_map->valueint != NULL))
+    if (cJSON_IsNumber(new_game_map))
         cJSON_AddNumberToObject(new_game_data, "mapId", new_game_map->valueint);
     cJSON_AddItemToArray(array_games, new_game_data);
 
@@ -125,13 +150,13 @@ int action_game_create(int *cFd, char *buffer)
 /**
  * @brief Function used to setup the main Server. This will instantiate
  * using `service.h` functions to bind the socket.
- * Then `setup_server_manager()` put the given server into listening mode.
+ * Then `setup_server_socket()` put the given server into listening mode.
  * @param server_manager `struct Server` pointing to the server to setup.
  * @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
  */
-int setup_server_manager(Server *server_manager)
+int setup_server_socket(Server *server_manager, int port, int type)
 {
-    if (init_server(server_manager, 42069) < 0)
+    if (init_server(server_manager, port, type) < 0)
         handle_error("init_server", -1);
 
     if (add_server(server_manager) < 0)
@@ -146,7 +171,7 @@ int setup_server_manager(Server *server_manager)
 }
 
 /**
- * @brief Function to process the received message from a client
+ * @brief Function where the thread handles the client requests
  * @param client_socket FD of the client
  * @param buffer message sent by the client
  */
@@ -202,7 +227,6 @@ int main(int argc, char *argv[])
 {
     signal(SIGINT, kill_handler);
     Server server_manager;
-    port = 42069;
 
     pthread_t threads[MAX_CLIENTS];
 
@@ -211,8 +235,8 @@ int main(int argc, char *argv[])
     struct sockaddr_in c_addr;
     socklen_t c_addr_len = sizeof(c_addr);
 
-    if (setup_server_manager(&server_manager) < 0)
-        handle_error("server_manager: setup_server_manager", -1);
+    if (setup_server_socket(&server_manager, 42069, SOCK_STREAM) < 0)
+        handle_error("server_manager: setup_server_socket", -1);
 
     for (;;)
     {
