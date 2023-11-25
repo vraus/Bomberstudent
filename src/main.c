@@ -1,15 +1,16 @@
 #include "service.h"
 #include "allocationsManager.h"
 
-#define MAX_SERVERS 200
-#define MAX_CLIENTS 200
+#include <pthread.h>
+
+#define MAX_CLIENTS 200 // Max Number of pthread for clients
+#define MAX_SIZE_MESSAGE 1024
 #define GAME_LIST_PATH "json/gameslist.json"
 #define MAPS_LIST_PATH "json/mapslist.json"
 #define GAME_CREATE_PATH "json/gamecreate.json"
 
 int port = 0;
 int num_clients = 0;
-char buffer[1024];
 
 /** @brief Signal handler to free allocations when SIGINT on the main server */
 void kill_handler(int n)
@@ -41,7 +42,7 @@ int readJsonFile(int *cFd, char *path_json_file, char **content)
 /** @brief Function called when client send `POST game/create` request.
  *  @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
  */
-int actionGameCreate(int *cFd)
+int actionGameCreate(int *cFd, char *buffer)
 {
     // TODO: Voir si la méthode peut rentrer dans une fonction
     FILE *game_create_json = fopen(GAME_LIST_PATH, "r");
@@ -143,139 +144,89 @@ int setupServerManager(Server *server_manager)
  * @param client_socket FD of the client
  * @param buffer message sent by the client
  */
-int answerServer(int client_socket, char *buffer)
+void *answer_server(void *arg)
 {
+    int client_socket = *((int *)arg), id = num_clients;
+    ssize_t rd;
     char *response = (char *)calloc(256, sizeof(char));
+    char *buffer = (char *)calloc(MAX_SIZE_MESSAGE, sizeof(char));
 
-    if (strncmp(buffer, "POST game/create", 16) == 0)
+    while ((rd = read(client_socket, buffer, MAX_SIZE_MESSAGE)) > 0)
     {
-        if (actionGameCreate(&client_socket) < 0)
-            handle_error_noexit("POST game/create");
-    }
-    else if (strncmp(buffer, "GET maps/list", 13) == 0)
-    {
-        if (readJsonFile(&client_socket, MAPS_LIST_PATH, &response) < 0)
-            handle_error_noexit("GET maps/list");
-    }
-    else if (strncmp(buffer, "GET game/list", 13) == 0)
-    {
-        if (readJsonFile(&client_socket, GAME_LIST_PATH, &response) < 0)
-            handle_error_noexit("GET game/list");
-    }
-    else if (strncmp(buffer, "looking for bomberstudent servers", 33) == 0)
-    {
+        buffer[rd] = '\0';
+        printf("User %d: %s\n", id, buffer);
+        if (strncmp(buffer, "POST game/create", 16) == 0)
+        {
+            if (actionGameCreate(&client_socket, buffer) < 0)
+                handle_error_noexit("POST game/create");
+        }
+        else if (strncmp(buffer, "GET maps/list", 13) == 0)
+        {
+            if (readJsonFile(&client_socket, MAPS_LIST_PATH, &response) < 0)
+                handle_error_noexit("GET maps/list");
+        }
+        else if (strncmp(buffer, "GET game/list", 13) == 0)
+        {
+            if (readJsonFile(&client_socket, GAME_LIST_PATH, &response) < 0)
+                handle_error_noexit("GET game/list");
+        }
+        else if (strncmp(buffer, "looking for bomberstudent servers", 33) == 0)
+        {
 
-        sprintf(response, "hello i'm a bomberstudent server.\n");
-        response[strlen(response) + 1] = '\0';
-    }
-    else
-    {
-        sprintf(response, "Unkowned command.\n"
-                          "List of commands:\n"
-                          " - 'looking for bomberstudent servers'\n"
-                          " - 'GET maps/list'\n"
-                          " - 'GET game/list'\n"
-                          " - 'POST game/create'\n");
-        response[strlen(response) + 1] = '\0';
+            sprintf(response, "hello i'm a bomberstudent server.\n");
+            response[strlen(response) + 1] = '\0';
+        }
+        else
+        {
+            sprintf(response, "Unkowned command.\n"
+                              "List of commands:\n"
+                              " - 'looking for bomberstudent servers'\n"
+                              " - 'GET maps/list'\n"
+                              " - 'GET game/list'\n"
+                              " - 'POST game/create'\n");
+            response[strlen(response) + 1] = '\0';
+        }
+
+        if (response != NULL)
+            send(client_socket, response, strlen(response), 0);
     }
 
-    if (response != NULL)
-        send(client_socket, response, strlen(response), 0);
-
-    return 0;
+    close(client_socket);
+    pthread_exit(NULL);
 }
 
-// TODO: multithreader le server
-//  Enlever du gras
+// TODO: multithreader le server, faire un thread qui s'occupe de la connexion d'un client jusqu'à ce qu'il veuille
+//  join / create une game.
+
+// FIXME: Enlever du gras
 int main(int argc, char *argv[])
 {
     signal(SIGINT, kill_handler);
     Server server_manager;
     port = 42069;
 
+    pthread_t threads[MAX_CLIENTS];
+
     int client_sockets[MAX_CLIENTS];
-    int new_socket;
+    int index = 0;
     struct sockaddr_in c_addr;
     socklen_t c_addr_len = sizeof(c_addr);
-
-    fd_set read_fds;
-
-    if (add_string(buffer) < 0)
-        handle_error("buffer: addstring", -1);
-
-    int activity, index, valread;
-
-    for (index = 0; index < MAX_CLIENTS; index++)
-        client_sockets[index] = 0;
 
     if (setupServerManager(&server_manager) < 0)
         handle_error("server_manager: setupServerManager", -1);
 
     for (;;)
     {
-        FD_ZERO(&read_fds);
-        FD_SET(server_manager.server_socket, &read_fds);
-        int max_sd = server_manager.server_socket;
+        if ((client_sockets[index] = accept(server_manager.server_socket, (struct sockaddr *)&c_addr, &c_addr_len)) < 0)
+            handle_error("accept", -1);
 
-        for (index = 0; index < MAX_CLIENTS; index++) // Add clients to the read_fds
-        {
-            int sd = client_sockets[index];
+        printf("New user joined: %d\n", client_sockets[index]);
+        num_clients++;
 
-            if (sd > 0)
-                FD_SET(sd, &read_fds);
+        if (pthread_create(&threads[index], NULL, answer_server, (void *)&client_sockets[index]) != 0)
+            handle_error("pthread_create", -1);
 
-            if (sd > max_sd)
-                max_sd = sd;
-        }
-
-        // Await client activity
-        activity = select(max_sd + 1, &read_fds, NULL, NULL, NULL);
-        if (activity < 0)
-            handle_error("activity: select", -1);
-
-        // Accept all new connexions detected
-        if (FD_ISSET(server_manager.server_socket, &read_fds))
-        {
-            if ((new_socket = accept(server_manager.server_socket, (struct sockaddr *)&c_addr, (socklen_t *)&c_addr_len)) < 0)
-                handle_error("new_socket: accept", -1);
-
-            // Add the new client to the client_sockets group
-            for (index = 0; index < MAX_CLIENTS; index++)
-            {
-                if (client_sockets[index] == 0)
-                {
-                    num_clients++;
-                    client_sockets[index] = new_socket;
-                    printf("New connection, socket fd is %d\n", new_socket);
-                    break;
-                }
-            }
-        }
-
-        // Check for incoming messages
-        for (index = 0; index < MAX_CLIENTS; index++)
-        {
-            int sd = client_sockets[index];
-
-            if (FD_ISSET(sd, &read_fds))
-            {
-                if ((valread = read(sd, buffer, sizeof(buffer))) == 0)
-                {
-                    // Disconnects the client
-                    getpeername(sd, (struct sockaddr *)&c_addr, (socklen_t *)&c_addr_len);
-                    printf("Host Disconnected, ip %s, port %d\n", inet_ntoa(c_addr.sin_addr), ntohs(c_addr.sin_port));
-                    close(sd);
-                    client_sockets[index] = 0;
-                    num_clients--;
-                }
-                else
-                {
-                    buffer[valread] = '\0';
-                    if (answerServer(client_sockets[index], buffer) < 0)
-                        handle_error_noexit("answerServer");
-                }
-            }
-        }
+        index++;
     }
 
     return 0;
