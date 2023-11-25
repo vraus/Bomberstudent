@@ -2,7 +2,7 @@
 	"action":	"game/create",
 	"statut":	"201",
 	"message":	"game created",
-	"nbPlayers":	0,
+	"nbPlayers":	1,
 	"mapId":	1,
 	"startPos":	"3,2",
 	"player":	{

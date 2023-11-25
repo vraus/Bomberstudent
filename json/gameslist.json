@@ -1,11 +1,19 @@
 {
 	"action":	"game/list",
-	"statut":	"20",
+	"statut":	"200",
 	"message":	"ok",
-	"nbGamesList":	1,
+	"nbGamesList":	3,
 	"games":	[{
-			"name":	"samey",
+			"name":	"game1",
 			"nbPlayers":	1,
-			"mapId":	3
+			"mapId":	1
+		}, {
+			"name":	"test",
+			"nbPlayers":	1,
+			"mapId":	2
+		}, {
+			"name":	"ok",
+			"nbPlayers":	1,
+			"mapId":	1
 		}]
 }
