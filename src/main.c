@@ -3,6 +3,14 @@
 
 #include <pthread.h>
 
+#define handle_json_error(msg)                       \
+    do                                               \
+    {                                                \
+        const char *error_ptr = cJSON_GetErrorPtr(); \
+        if (error_ptr != NULL)                       \
+            handle_error_noexit("msg");              \
+    } while (0)
+
 #define MAX_CLIENTS 200 // Max Number of pthread for clients
 #define MAX_SIZE_MESSAGE 1024
 #define GAME_LIST_PATH "json/gameslist.json"
@@ -19,11 +27,11 @@ void kill_handler(int n)
     exit(EXIT_SUCCESS);
 }
 
-int readJsonFile(int *cFd, char *path_json_file, char **content)
+int read_json_file(int *cFd, char *path_json_file, char **content)
 {
     FILE *games_list_file = fopen(path_json_file, "r++");
     if (!games_list_file)
-        handle_error("fopen", -1);
+        handle_error("fopen games_list_file \"r++\"", -1);
 
     fseek(games_list_file, 0, SEEK_END);
     long tell = ftell(games_list_file);
@@ -31,7 +39,7 @@ int readJsonFile(int *cFd, char *path_json_file, char **content)
 
     *content = (char *)calloc(tell, sizeof(char));
     if (fread(*content, 1, tell, games_list_file) < 0)
-        handle_error("freadJsonFile", -1);
+        handle_error("read_json_file(): fread", -1);
 
     content[0][tell] = '\0';
 
@@ -42,12 +50,12 @@ int readJsonFile(int *cFd, char *path_json_file, char **content)
 /** @brief Function called when client send `POST game/create` request.
  *  @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
  */
-int actionGameCreate(int *cFd, char *buffer)
+int action_game_create(int *cFd, char *buffer)
 {
     // TODO: Voir si la méthode peut rentrer dans une fonction
     FILE *game_create_json = fopen(GAME_LIST_PATH, "r");
     if (game_create_json == NULL)
-        handle_error("fopen gameCreateJson r", -1);
+        handle_error("fopen game_create_json \"r\"", -1);
 
     fseek(game_create_json, 0, SEEK_END);
     long tell = ftell(game_create_json);
@@ -55,7 +63,7 @@ int actionGameCreate(int *cFd, char *buffer)
 
     char *content = (char *)calloc(tell, sizeof(char));
     if (fread(content, 1, tell, game_create_json) < 0)
-        handle_error("fread acionGameCreate", -1);
+        handle_error("action_game_create(): fread", -1);
 
     fclose(game_create_json);
 
@@ -63,9 +71,7 @@ int actionGameCreate(int *cFd, char *buffer)
     cJSON *root = cJSON_Parse(content);
     if (root == NULL)
     {
-        const char *error_ptr = cJSON_GetErrorPtr();
-        if (error_ptr != NULL)
-            handle_error_noexit("root: Error");
+        handle_json_error("root");
         cJSON_Delete(root);
         return 1;
     }
@@ -80,9 +86,7 @@ int actionGameCreate(int *cFd, char *buffer)
     cJSON *new_game = cJSON_Parse(buff);
     if (new_game == NULL)
     {
-        const char *error_ptr = cJSON_GetErrorPtr();
-        if (error_ptr != NULL)
-            handle_error_noexit("new_game: Error");
+        handle_json_error("new_game");
         cJSON_Delete(new_game);
         return 1;
     }
@@ -95,16 +99,18 @@ int actionGameCreate(int *cFd, char *buffer)
     cJSON *new_game_data = cJSON_CreateObject();
     cJSON *new_game_name = cJSON_GetObjectItemCaseSensitive(new_game, "name");
     cJSON *new_game_map = cJSON_GetObjectItemCaseSensitive(new_game, "mapId");
-    cJSON_AddStringToObject(new_game_data, "name", new_game_name->valuestring);
+    if (cJSON_IsString(new_game_name) && (new_game_name->valuestring != NULL))
+        cJSON_AddStringToObject(new_game_data, "name", new_game_name->valuestring);
     cJSON_AddNumberToObject(new_game_data, "nbPlayers", 1);
-    cJSON_AddNumberToObject(new_game_data, "mapId", new_game_map->valueint);
+    if (cJSON_IsNumber(new_game_map) && (new_game_map->valueint != NULL))
+        cJSON_AddNumberToObject(new_game_data, "mapId", new_game_map->valueint);
     cJSON_AddItemToArray(array_games, new_game_data);
 
     char *json_str = cJSON_Print(root);
     game_create_json = fopen(GAME_LIST_PATH, "w");
 
     if (game_create_json == NULL)
-        handle_error("fopen gameCreateJson w", -1);
+        handle_error("fopen game_create_json \"w\"", -1);
 
     printf("%s\n", json_str);
     fputs(json_str, game_create_json);
@@ -119,11 +125,11 @@ int actionGameCreate(int *cFd, char *buffer)
 /**
  * @brief Function used to setup the main Server. This will instantiate
  * using `service.h` functions to bind the socket.
- * Then `setupServerManager()` put the given server into listening mode.
+ * Then `setup_server_manager()` put the given server into listening mode.
  * @param server_manager `struct Server` pointing to the server to setup.
  * @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
  */
-int setupServerManager(Server *server_manager)
+int setup_server_manager(Server *server_manager)
 {
     if (init_server(server_manager, 42069) < 0)
         handle_error("init_server", -1);
@@ -156,18 +162,15 @@ void *answer_server(void *arg)
         buffer[rd] = '\0';
         printf("User %d: %s\n", id, buffer);
         if (strncmp(buffer, "POST game/create", 16) == 0)
-        {
-            if (actionGameCreate(&client_socket, buffer) < 0)
-                handle_error_noexit("POST game/create");
-        }
+            action_game_create(&client_socket, buffer);
         else if (strncmp(buffer, "GET maps/list", 13) == 0)
         {
-            if (readJsonFile(&client_socket, MAPS_LIST_PATH, &response) < 0)
+            if (read_json_file(&client_socket, MAPS_LIST_PATH, &response) < 0)
                 handle_error_noexit("GET maps/list");
         }
         else if (strncmp(buffer, "GET game/list", 13) == 0)
         {
-            if (readJsonFile(&client_socket, GAME_LIST_PATH, &response) < 0)
+            if (read_json_file(&client_socket, GAME_LIST_PATH, &response) < 0)
                 handle_error_noexit("GET game/list");
         }
         else if (strncmp(buffer, "looking for bomberstudent servers", 33) == 0)
@@ -190,15 +193,11 @@ void *answer_server(void *arg)
         if (response != NULL)
             send(client_socket, response, strlen(response), 0);
     }
-
+    printf("Client %d disconnected.\n", id);
     close(client_socket);
     pthread_exit(NULL);
 }
 
-// TODO: multithreader le server, faire un thread qui s'occupe de la connexion d'un client jusqu'à ce qu'il veuille
-//  join / create une game.
-
-// FIXME: Enlever du gras
 int main(int argc, char *argv[])
 {
     signal(SIGINT, kill_handler);
@@ -212,16 +211,15 @@ int main(int argc, char *argv[])
     struct sockaddr_in c_addr;
     socklen_t c_addr_len = sizeof(c_addr);
 
-    if (setupServerManager(&server_manager) < 0)
-        handle_error("server_manager: setupServerManager", -1);
+    if (setup_server_manager(&server_manager) < 0)
+        handle_error("server_manager: setup_server_manager", -1);
 
     for (;;)
     {
         if ((client_sockets[index] = accept(server_manager.server_socket, (struct sockaddr *)&c_addr, &c_addr_len)) < 0)
             handle_error("accept", -1);
 
-        printf("New user joined: %d\n", client_sockets[index]);
-        num_clients++;
+        printf("New user joined: %d\n", ++num_clients);
 
         if (pthread_create(&threads[index], NULL, answer_server, (void *)&client_sockets[index]) != 0)
             handle_error("pthread_create", -1);

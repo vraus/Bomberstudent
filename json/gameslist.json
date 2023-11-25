@@ -2,14 +2,6 @@
 	"action":	"game/list",
 	"statut":	"200",
 	"message":	"ok",
-	"nbGamesList":	2,
-	"games":	[{
-			"name":	"COUCOU",
-			"nbPlayers":	1,
-			"mapId":	12636
-		}, {
-			"name":	"bite",
-			"nbPlayers":	1,
-			"mapId":	5
-		}]
+	"nbGamesList":	0,
+	"games":	[]
 }
