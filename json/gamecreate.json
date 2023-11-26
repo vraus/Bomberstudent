@@ -4,6 +4,7 @@
 	"message":	"game created",
 	"nbPlayers":	1,
 	"mapId":	1,
+	"players":	[],
 	"startPos":	"3,2",
 	"player":	{
 		"life":	100,

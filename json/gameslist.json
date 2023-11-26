@@ -2,7 +2,7 @@
 	"action":	"game/list",
 	"statut":	"200",
 	"message":	"ok",
-	"nbGamesList":	3,
+	"nbGamesList":	2,
 	"games":	[{
 			"name":	"game1",
 			"nbPlayers":	1,
@@ -11,9 +11,5 @@
 			"name":	"test",
 			"nbPlayers":	1,
 			"mapId":	2
-		}, {
-			"name":	"ok",
-			"nbPlayers":	1,
-			"mapId":	1
 		}]
 }
