@@ -61,11 +61,18 @@ int read_json_file(char *path_json_file, char **content)
     long tell = ftell(games_list_file);
     fseek(games_list_file, 0, SEEK_SET);
 
-    *content = (char *)calloc(tell, sizeof(char));
-    if (fread(*content, 1, tell, games_list_file) < 0)
+    *content = (char *)calloc(tell + 1, sizeof(char));
+    if (!*content) {
+        fclose(games_list_file);
+        handle_error("Error allocating memory, read_json_file(): fread", -1);
+    }
+    if (fread(*content, 1, tell, games_list_file) < 0) {
+        free(*content);
+        fclose(games_list_file);
         handle_error("read_json_file(): fread", -1);
+    }
 
-    content[0][tell] = '\0';
+    (*content)[tell] = '\0';
 
     fclose(games_list_file);
     return 0;
@@ -343,6 +350,7 @@ int main(int argc, char *argv[])
 
     for (;;)
     {
+        // XXX: problème avec le accept (regarder valgrind)
         if ((client_sockets[index] = accept(server_manager.server_socket, (struct sockaddr *)&c_addr, &c_addr_len)) < 0)
             handle_error("accept", -1);
 

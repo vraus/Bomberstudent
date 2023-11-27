@@ -9,7 +9,7 @@
 			"mapId":	1
 		}, {
 			"name":	"test",
-			"nbPlayers":	1,
+			"nbPlayers":	2,
 			"mapId":	2
 		}]
 }

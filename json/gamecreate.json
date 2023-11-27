@@ -3,8 +3,11 @@
 	"statut":	"201",
 	"message":	"game created",
 	"nbPlayers":	1,
-	"mapId":	1,
-	"players":	[],
+	"mapId":	2,
+	"players":	[{
+			"name":	"player1",
+			"pos":	"0,0"
+		}],
 	"startPos":	"3,2",
 	"player":	{
 		"life":	100,
