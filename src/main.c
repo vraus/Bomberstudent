@@ -58,13 +58,13 @@ void *answer_server(void *arg)
         if (strncmp(buffer, "POST game/create", 16) == 0)
         {
             action_game_create(&client_socket, buffer);
-            if (read_json_file(GAME_CREATE_PATH, &response) < 0)
+            if (read_json_file(GAME_LIST_PATH, &response) < 0)
                 handle_error_noexit("GET game/create");
         }
         else if (strncmp(buffer, "POST game/join", 14) == 0)
         {
             action_game_join(&client_socket, buffer);
-            if (read_json_file(GAME_CREATE_PATH, &response) < 0)
+            if (read_json_file(GAME_LIST_PATH, &response) < 0)
                 handle_error_noexit("GET game/join");
         }
         else if (strncmp(buffer, "GET maps/list", 13) == 0)

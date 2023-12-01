@@ -31,7 +31,7 @@ int read_json_file(char *path_json_file, char **content)
 
 int action_game_join(int *cFd, char *buffer)
 {
-    // Json parse of the gamejoin request
+    // Parse the gamejoin request
     char buff[strlen(buffer) - 15];
     for (int i = 0; i < strlen(buffer) - 15; i++)
         buff[i] = buffer[i + 15];
@@ -46,6 +46,7 @@ int action_game_join(int *cFd, char *buffer)
         return -1;
     }
 
+    // Get the name of the game the player wants to join
     cJSON *game_name = cJSON_GetObjectItemCaseSensitive(file_join_game, "name");
     if (!(cJSON_IsString(game_name)) || (game_name->valuestring == NULL))
         handle_error("game_name: bad usage", -1);
@@ -57,8 +58,8 @@ int action_game_join(int *cFd, char *buffer)
     sprintf(join_game_path, "%s%s.json", join_game_file, game_name->valuestring);
 
     char *tmp_file = (char *)calloc(MAX_SIZE_MESSAGE, sizeof(char));
-    if (read_json_file(join_game_file, &tmp_file) < 0)
-        handle_error_noexit("GET game/list");
+    if (read_json_file(join_game_path, &tmp_file) < 0)
+        handle_error_noexit("tmp_file: read_json_file");
 
     cJSON *tmp_game = cJSON_Parse(tmp_file);
     if (tmp_game == NULL)
@@ -82,7 +83,7 @@ int action_game_join(int *cFd, char *buffer)
     char *json_str = cJSON_Print(tmp_game);
     FILE *game = fopen(join_game_path, "w");
     if (game == NULL)
-        handle_error("fopen game_create_json \"w\"", -1);
+        handle_error("fopen game_join \"w\"", -1);
 
     printf("%s\n", json_str);
     fputs(json_str, game);
@@ -91,12 +92,12 @@ int action_game_join(int *cFd, char *buffer)
     // Update of the gameslist json file
     char *content = (char *)calloc(MAX_SIZE_MESSAGE, sizeof(char));
     if (read_json_file(GAME_LIST_PATH, &content) < 0)
-        handle_error_noexit("GET game/list");
+        handle_error_noexit("content: read_json_file");
 
     cJSON *cj_games_list = cJSON_Parse(content);
     if (cj_games_list == NULL)
     {
-        handle_json_error("cj_games_list");
+        handle_json_error("cj_games_list: cJSON_Parse");
         cJSON_Delete(cj_games_list);
         return -1;
     }
@@ -129,9 +130,9 @@ int action_game_join(int *cFd, char *buffer)
     free(content);
     cJSON_Delete(file_join_game);
 
-    // Update of the players in the gamecreate json file
-    char *res = (char *)calloc(MAX_SIZE_MESSAGE, sizeof(char));
-    if (read_json_file(GAME_CREATE_PATH, &res) < 0)
+    // Update of the players in the tmp json file
+    /*char *res = (char *)calloc(MAX_SIZE_MESSAGE, sizeof(char));
+    if (read_json_file(join_game_path, &res) < 0)
         handle_error_noexit("GET game/create");
 
     // Parse of the gameCreate json file
@@ -150,13 +151,13 @@ int action_game_join(int *cFd, char *buffer)
     cJSON_AddItemToArray(array_players, new_player_data);
 
     char *json_g = cJSON_Print(gamecreate);
-    FILE *game_create_json = fopen(GAME_CREATE_PATH, "w");
+    FILE *game_create_json = fopen(join_game_path, "w");
     if (game_create_json == NULL)
         handle_error("fopen game_create_json \"w\"", -1);
     fputs(json_g, game_create_json);
     fclose(game_create_json);
     cJSON_Delete(gamecreate);
-    free(res);
+    free(res);*/
 
     return 0;
 }
@@ -240,20 +241,7 @@ int action_game_create(int *cFd, char *buffer)
         return -1;
     }
 
-    char *res = (char *)calloc(MAX_SIZE_MESSAGE, sizeof(char));
-    if (read_json_file(GAME_CREATE_PATH, &res) < 0)
-        handle_error_noexit("res: read_json_file");
-
-    // Parse of the gameCreate json file
-    cJSON *gamecreate = cJSON_Parse(res);
-    if (gamecreate == NULL)
-    {
-        handle_json_error("gamecreate");
-        cJSON_Delete(gamecreate);
-        free(res);
-        return -1;
-    }
-
+    // Gets the json part of client's request
     char buff[strlen(buffer) - 17];
     for (int i = 0; i < strlen(buffer) - 17; i++)
         buff[i] = buffer[i + 17];
@@ -281,15 +269,8 @@ int action_game_create(int *cFd, char *buffer)
         cJSON_AddStringToObject(new_game_data, "name", new_game_name->valuestring);
     cJSON_AddNumberToObject(new_game_data, "nbPlayers", 1);
     if (cJSON_IsNumber(new_game_map))
-    {
         cJSON_AddNumberToObject(new_game_data, "mapId", new_game_map->valueint);
-        cJSON *map_id_create = cJSON_GetObjectItemCaseSensitive(gamecreate, "mapId");
-        if (map_id_create != NULL)
-        {
-            map_id_create->valueint = new_game_map->valueint;
-            cJSON_ReplaceItemInObjectCaseSensitive(gamecreate, "mapId", cJSON_CreateNumber(map_id_create->valueint));
-        }
-    }
+
     cJSON_AddItemToArray(array_games, new_game_data);
 
     if (create_running_game_data(new_game_name->valuestring, cFd) < 0)
@@ -305,18 +286,10 @@ int action_game_create(int *cFd, char *buffer)
     fputs(json_str, game_list_json);
     fclose(game_list_json);
 
-    json_str = cJSON_Print(gamecreate);
-    FILE *game_create_json = fopen(GAME_CREATE_PATH, "w");
-    if (game_create_json == NULL)
-        handle_error("fopen game_create_json \"w\"", -1);
-    fputs(json_str, game_create_json);
-    fclose(game_create_json);
-
     cJSON_Delete(root);
-    running_game(cFd, new_game_name->valuestring);
+    // running_game(cFd, new_game_name->valuestring);
     cJSON_Delete(new_game);
     free(content);
-    free(res);
 
     return 0;
 }

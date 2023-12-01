@@ -7,7 +7,6 @@
 #define MAX_SIZE_MESSAGE 1024
 #define GAME_LIST_PATH "json/gameslist.json"
 #define MAPS_LIST_PATH "json/mapslist.json"
-#define GAME_CREATE_PATH "json/gamecreate.json"
 
 #define handle_json_error(msg)                       \
     do                                               \

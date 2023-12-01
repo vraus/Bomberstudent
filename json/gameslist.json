@@ -1,7 +1,11 @@
 {
-	"action": "game/list",
-	"statut": "200",
-	"message": "ok",
-	"nbGamesList": 2,
-	"games": []
+	"action":	"game/list",
+	"statut":	"200",
+	"message":	"ok",
+	"nbGamesList":	1,
+	"games":	[{
+			"name":	"pouet",
+			"nbPlayers":	2,
+			"mapId":	6
+		}]
 }
