@@ -128,6 +128,7 @@ int action_game_join(int *cFd, char *buffer)
 
     cJSON_Delete(cj_games_list);
     free(content);
+    running_game(cFd, game_name->valuestring);
     cJSON_Delete(file_join_game);
 
     // Update of the players in the tmp json file
@@ -287,7 +288,7 @@ int action_game_create(int *cFd, char *buffer)
     fclose(game_list_json);
 
     cJSON_Delete(root);
-    // running_game(cFd, new_game_name->valuestring);
+    running_game(cFd, new_game_name->valuestring);
     cJSON_Delete(new_game);
     free(content);
 
