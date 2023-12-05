@@ -68,6 +68,9 @@ void *answer_server(void *arg)
             if (read_json_file(MAPS_LIST_PATH, &response) < 0)
                 handle_error_noexit("GET maps/list");
         }
+        else if (strncmp(buffer, "POST player/move", 16) == 0) {
+            action_player_move(&client_socket, buffer);
+        }
         else if (strncmp(buffer, "GET game/list", 13) == 0)
         {
             if (read_json_file(GAME_LIST_PATH, &response) < 0)

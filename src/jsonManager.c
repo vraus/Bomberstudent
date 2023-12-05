@@ -130,36 +130,6 @@ int action_game_join(int *cFd, char *buffer)
     free(content);
     running_game(cFd, game_name->valuestring);
     cJSON_Delete(file_join_game);
-
-    // Update of the players in the tmp json file
-    /*char *res = (char *)calloc(MAX_SIZE_MESSAGE, sizeof(char));
-    if (read_json_file(join_game_path, &res) < 0)
-        handle_error_noexit("GET game/create");
-
-    // Parse of the gameCreate json file
-    cJSON *gamecreate = cJSON_Parse(res);
-    if (gamecreate == NULL)
-    {
-        handle_json_error("gamecreate");
-        cJSON_Delete(gamecreate);
-        return -1;
-    }
-
-    cJSON *array_players = cJSON_GetObjectItemCaseSensitive(gamecreate, "players");
-    cJSON *new_player_data = cJSON_CreateObject();
-    cJSON_AddStringToObject(new_player_data, "name", "player1");
-    cJSON_AddStringToObject(new_player_data, "pos", "0,0");
-    cJSON_AddItemToArray(array_players, new_player_data);
-
-    char *json_g = cJSON_Print(gamecreate);
-    FILE *game_create_json = fopen(join_game_path, "w");
-    if (game_create_json == NULL)
-        handle_error("fopen game_create_json \"w\"", -1);
-    fputs(json_g, game_create_json);
-    fclose(game_create_json);
-    cJSON_Delete(gamecreate);
-    free(res);*/
-
     return 0;
 }
 
@@ -292,5 +262,69 @@ int action_game_create(int *cFd, char *buffer)
     cJSON_Delete(new_game);
     free(content);
 
+    return 0;
+}
+
+
+
+/*les positions seront traitées et transmises sous la forme d’une couple (x,y) 
+avec x le numéro de colonne et y le numéro de ligne. 
+la case d’origine est considéré être la case située dans le coin inférieur gauche.
+*/
+int action_player_move(int *cFd, char *buffer) {
+    // Gets the json part of client's request
+    char buff[strlen(buffer) - 17];
+    for (int i = 0; i < strlen(buffer) - 17; i++)
+        buff[i] = buffer[i + 17];
+
+    buff[strlen(buff) - 1] = '\0';
+
+    // Parse the client request of creating new game
+    cJSON *move = cJSON_Parse(buff);
+    if (move == NULL)
+    {
+        handle_json_error("move");
+        cJSON_Delete(move);
+        return -1;
+    }
+
+    cJSON *dir = cJSON_GetObjectItemCaseSensitive(move, "move");
+    //Tester si le mouvement est possible
+    //prend startpos?
+    if (strcmp(dir->valuestring, "up") == 0) {
+        //int is_valid_move(int x, int y);
+    }
+    else if (strcmp(dir->valuestring, "down") == 0) {
+        //int is_valid_move(int x, int y);
+    }
+    else if (strcmp(dir->valuestring, "left") == 0) {
+            //int is_valid_move(int x, int y);
+    }
+    else if (strcmp(dir->valuestring, "right") == 0) {
+            //int is_valid_move(int x, int y);
+    }
+
+    const char *new_file = "json/";
+    const char *name_file = "position_update";
+    size_t len_path = strlen(new_file) + strlen(name_file) + 1;
+    char new_path[len_path];
+    sprintf(new_path, "%s%s.json", new_file, name_file);
+
+    FILE *position = fopen(new_path, "w");
+    if (position == NULL)
+        handle_error("position fopen", -1);
+
+    cJSON *new_pos = cJSON_CreateObject();
+    cJSON_AddNumberToObject(new_pos, "player", *cFd);
+    cJSON_AddStringToObject(new_pos, "dir", dir->valuestring);
+
+    char *json_print = cJSON_Print(new_pos);
+
+    position = fopen(new_path, "w");
+    if (position == NULL)
+        handle_error("position fopen", -1);
+
+    fputs(json_print, position);
+    fclose(position);
     return 0;
 }
