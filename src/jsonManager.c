@@ -265,13 +265,12 @@ int action_game_create(int *cFd, char *buffer)
     return 0;
 }
 
-
-
-/*les positions seront traitées et transmises sous la forme d’une couple (x,y) 
-avec x le numéro de colonne et y le numéro de ligne. 
+/*les positions seront traitées et transmises sous la forme d’une couple (x,y)
+avec x le numéro de colonne et y le numéro de ligne.
 la case d’origine est considéré être la case située dans le coin inférieur gauche.
 */
-int action_player_move(int *cFd, char *buffer) {
+int action_player_move(int *cFd, char *buffer)
+{
     // Gets the json part of client's request
     char buff[strlen(buffer) - 17];
     for (int i = 0; i < strlen(buffer) - 17; i++)
@@ -289,19 +288,23 @@ int action_player_move(int *cFd, char *buffer) {
     }
 
     cJSON *dir = cJSON_GetObjectItemCaseSensitive(move, "move");
-    //Tester si le mouvement est possible
-    //prend startpos?
-    if (strcmp(dir->valuestring, "up") == 0) {
-        //int is_valid_move(int x, int y);
+    // Tester si le mouvement est possible
+    // prend startpos?
+    if (strcmp(dir->valuestring, "up") == 0)
+    {
+        // int is_valid_move(int x, int y);
     }
-    else if (strcmp(dir->valuestring, "down") == 0) {
-        //int is_valid_move(int x, int y);
+    else if (strcmp(dir->valuestring, "down") == 0)
+    {
+        // int is_valid_move(int x, int y);
     }
-    else if (strcmp(dir->valuestring, "left") == 0) {
-            //int is_valid_move(int x, int y);
+    else if (strcmp(dir->valuestring, "left") == 0)
+    {
+        // int is_valid_move(int x, int y);
     }
-    else if (strcmp(dir->valuestring, "right") == 0) {
-            //int is_valid_move(int x, int y);
+    else if (strcmp(dir->valuestring, "right") == 0)
+    {
+        // int is_valid_move(int x, int y);
     }
 
     const char *new_file = "json/";
