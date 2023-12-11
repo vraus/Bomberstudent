@@ -114,6 +114,31 @@ void print_game_info(struct game_infos *game_infos)
     }
 }
 
+void send_message_to_all(struct game_infos *game_infos, int sender_socket, const char *message)
+{
+    struct Player *current_player = game_infos->players;
+
+    while (current_player != NULL)
+    {
+
+        cJSON *json_message = cJSON_CreateObject();
+        cJSON_AddNumberToObject(json_message, "id", sender_socket);
+        cJSON_AddStringToObject(json_message, "message", message);
+
+        char *json_string = cJSON_Print(json_message);
+
+        ssize_t sent_bytes = send(current_player->id, json_string, strlen(json_string), 0);
+
+        if (sent_bytes < 0)
+            handle_error_noexit("Error sending message to player");
+
+        free(json_string);
+        cJSON_Delete(json_message);
+
+        current_player = current_player->next;
+    }
+}
+
 int run_game(int *cFd, char *content)
 {
     int client_socket = *cFd;
@@ -156,7 +181,7 @@ int run_game(int *cFd, char *content)
     while ((rd = read(client_socket, buffer, MAX_SIZE_MESSAGE)) > 0)
     {
         buffer[rd] = '\0';
-        // Gestion des mooves
+        send_message_to_all(&game_infos_instance, client_socket, buffer);
     }
 
     return 0;
