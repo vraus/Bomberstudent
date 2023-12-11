@@ -1,6 +1,6 @@
-#include "service.h"
-#include "allocationsManager.h"
-#include "jsonManager.h"
+#include "../include/service.h"
+#include "../include/allocationsManager.h"
+#include "../include/jsonManager.h"
 
 #include <pthread.h>
 
@@ -68,13 +68,15 @@ void *answer_server(void *arg)
             if (read_json_file(MAPS_LIST_PATH, &response) < 0)
                 handle_error_noexit("GET maps/list");
         }
-        else if (strncmp(buffer, "POST player/move", 16) == 0) {
-            action_player_move(&client_socket, buffer);
-        }
         else if (strncmp(buffer, "GET game/list", 13) == 0)
         {
             if (read_json_file(GAME_LIST_PATH, &response) < 0)
                 handle_error_noexit("GET game/list");
+        }
+        else if (strncmp(buffer, "POST game/start", 15) == 0)
+        {
+            if (run_game(&client_socket, buffer) < 0)
+                handle_error_noexit("POST game/start");
         }
         else if (strncmp(buffer, "looking for bomberstudent servers", 33) == 0)
         {

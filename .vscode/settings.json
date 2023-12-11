@@ -2,7 +2,8 @@
     "files.associations": {
         "allocationsmanager.h": "c",
         "jansson.h": "c",
-        "service.h": "c"
+        "service.h": "c",
+        "game_running.h": "c"
     }
 
 },

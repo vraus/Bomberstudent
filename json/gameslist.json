@@ -4,8 +4,8 @@
 	"message":	"ok",
 	"nbGamesList":	1,
 	"games":	[{
-			"name":	"pouet",
-			"nbPlayers":	2,
-			"mapId":	6
+			"name":	"new_game",
+			"nbPlayers":	1,
+			"mapId":	1
 		}]
 }

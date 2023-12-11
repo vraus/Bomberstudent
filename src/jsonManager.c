@@ -1,4 +1,4 @@
-#include "jsonManager.h"
+#include "../include/jsonManager.h"
 
 int read_json_file(char *path_json_file, char **content)
 {
@@ -14,7 +14,7 @@ int read_json_file(char *path_json_file, char **content)
     if (!*content)
     {
         fclose(games_list_file);
-        handle_error("Error allocating memory, read_json_file(): fread", -1);
+        handle_error("Error allocating memory, read_json_file()", -1);
     }
     if (fread(*content, 1, tell, games_list_file) < 0)
     {

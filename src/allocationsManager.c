@@ -1,4 +1,4 @@
-#include "allocationsManager.h"
+#include "../include/allocationsManager.h"
 
 AllocationManager alloc_manager = {0};
 
