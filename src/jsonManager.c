@@ -70,14 +70,28 @@ int action_game_join(int *cFd, char *buffer)
     }
 
     cJSON *nbPlayers = cJSON_GetObjectItemCaseSensitive(tmp_game, "nbPlayers");
-    cJSON_ReplaceItemInObjectCaseSensitive(tmp_game, "nbPlayers", cJSON_CreateNumber(nbPlayers->valueint + 1));
-
+    cJSON *nb_player = cJSON_CreateNumber(nbPlayers->valueint + 1);
+    cJSON_ReplaceItemInObjectCaseSensitive(tmp_game, "nbPlayers", nb_player);
     cJSON *array_pl = cJSON_GetObjectItemCaseSensitive(tmp_game, "players");
     cJSON *join_player_data = cJSON_CreateObject();
     cJSON_AddNumberToObject(join_player_data, "id", *cFd);
     cJSON *join_player_pos = cJSON_GetObjectItemCaseSensitive(tmp_game, "startPos");
+
     cJSON_AddStringToObject(join_player_data, "pos", join_player_pos->valuestring);
-    cJSON_ReplaceItemInObjectCaseSensitive(tmp_game, "startPos", cJSON_CreateString("3,2"));
+
+    // TODO: Bloquer l'arrivée d'autres joueurs si il y a déjà 4 joueurs dans la partie. (faire ça dans unity ?)
+    switch (nb_player->valueint)
+    {
+    case 2:
+        cJSON_ReplaceItemInObjectCaseSensitive(tmp_game, "startPos", cJSON_CreateString("2,6"));
+        break;
+    case 3:
+        cJSON_ReplaceItemInObjectCaseSensitive(tmp_game, "startPos", cJSON_CreateString("21,6"));
+        break;
+    default:
+        break;
+    }
+
     cJSON_AddItemToArray(array_pl, join_player_data);
 
     char *json_str = cJSON_Print(tmp_game);
@@ -154,10 +168,10 @@ int create_running_game_data(char *game_name, int *cFd)
     cJSON *players = cJSON_CreateArray();
     cJSON *player_info = cJSON_CreateObject();
     cJSON_AddNumberToObject(player_info, "id", *cFd);
-    cJSON_AddStringToObject(player_info, "pos", "5,3");
+    cJSON_AddStringToObject(player_info, "pos", "2,1");
     cJSON_AddItemToArray(players, player_info);
     cJSON_AddItemToObject(new_game, "players", players);
-    cJSON_AddStringToObject(new_game, "startPos", "5,3");
+    cJSON_AddStringToObject(new_game, "startPos", "21,1");
     cJSON *player = cJSON_CreateObject();
     cJSON_AddNumberToObject(player, "life", 100);
     cJSON_AddNumberToObject(player, "speed", 1);
@@ -262,72 +276,5 @@ int action_game_create(int *cFd, char *buffer)
     cJSON_Delete(new_game);
     free(content);
 
-    return 0;
-}
-
-/*les positions seront traitées et transmises sous la forme d’une couple (x,y)
-avec x le numéro de colonne et y le numéro de ligne.
-la case d’origine est considéré être la case située dans le coin inférieur gauche.
-*/
-int action_player_move(int *cFd, char *buffer)
-{
-    // Gets the json part of client's request
-    char buff[strlen(buffer) - 17];
-    for (int i = 0; i < strlen(buffer) - 17; i++)
-        buff[i] = buffer[i + 17];
-
-    buff[strlen(buff) - 1] = '\0';
-
-    // Parse the client request of creating new game
-    cJSON *move = cJSON_Parse(buff);
-    if (move == NULL)
-    {
-        handle_json_error("move");
-        cJSON_Delete(move);
-        return -1;
-    }
-
-    cJSON *dir = cJSON_GetObjectItemCaseSensitive(move, "move");
-    // Tester si le mouvement est possible
-    // prend startpos?
-    if (strcmp(dir->valuestring, "up") == 0)
-    {
-        // int is_valid_move(int x, int y);
-    }
-    else if (strcmp(dir->valuestring, "down") == 0)
-    {
-        // int is_valid_move(int x, int y);
-    }
-    else if (strcmp(dir->valuestring, "left") == 0)
-    {
-        // int is_valid_move(int x, int y);
-    }
-    else if (strcmp(dir->valuestring, "right") == 0)
-    {
-        // int is_valid_move(int x, int y);
-    }
-
-    const char *new_file = "json/";
-    const char *name_file = "position_update";
-    size_t len_path = strlen(new_file) + strlen(name_file) + 1;
-    char new_path[len_path];
-    sprintf(new_path, "%s%s.json", new_file, name_file);
-
-    FILE *position = fopen(new_path, "w");
-    if (position == NULL)
-        handle_error("position fopen", -1);
-
-    cJSON *new_pos = cJSON_CreateObject();
-    cJSON_AddNumberToObject(new_pos, "player", *cFd);
-    cJSON_AddStringToObject(new_pos, "dir", dir->valuestring);
-
-    char *json_print = cJSON_Print(new_pos);
-
-    position = fopen(new_path, "w");
-    if (position == NULL)
-        handle_error("position fopen", -1);
-
-    fputs(json_print, position);
-    fclose(position);
     return 0;
 }

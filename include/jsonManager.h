@@ -36,10 +36,4 @@ int running_game(int *cFd, char *game_name);
  */
 int action_game_create(int *cFd, char *buffer);
 
-/** @brief Function called when client send `POST player/move` request.
- *  modify the gamelist.json
- *  @return -1 when in error case (using the `handle_error` MACRO). 0 when no errors
- */
-int action_player_move(int *cFd, char *buffer);
-
 #endif
