@@ -184,5 +184,9 @@ int run_game(int *cFd, char *content)
         send_message_to_all(&game_infos_instance, client_socket, buffer);
     }
 
+    close(client_socket);
+    free(buff);
+    free(buffer);
+
     return 0;
 }
