@@ -3,5 +3,9 @@
 	"statut":	"200",
 	"message":	"ok",
 	"nbGamesList":	1,
-	"games":	[]
+	"games":	[{
+			"name":	"Game 2",
+			"nbPlayers":	1,
+			"mapId":	2
+		}]
 }

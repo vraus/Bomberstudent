@@ -48,11 +48,11 @@ void *answer_server(void *arg)
 {
     int client_socket = *((int *)arg), id = num_clients;
     ssize_t rd;
-    char *response = (char *)calloc(256, sizeof(char));
     char *buffer = (char *)calloc(MAX_SIZE_MESSAGE, sizeof(char));
 
     while ((rd = read(client_socket, buffer, MAX_SIZE_MESSAGE)) > 0)
     {
+        char *response = (char *)calloc(256, sizeof(char));
         buffer[rd] = '\0';
         printf("User %d: %s\n", id, buffer);
         if (strncmp(buffer, "POST game/create", 16) == 0)
@@ -80,9 +80,7 @@ void *answer_server(void *arg)
         }
         else if (strncmp(buffer, "looking for bomberstudent servers", 33) == 0)
         {
-
             sprintf(response, "hello i'm a bomberstudent server.\n");
-            response[strlen(response) + 1] = '\0';
         }
         else
         {
@@ -93,11 +91,13 @@ void *answer_server(void *arg)
                               " - 'GET game/list'\n"
                               " - 'POST game/create'\n"
                               " - 'POST game/join'\n");
-            response[strlen(response) + 1] = '\0';
         }
 
         if (response != NULL)
+        {
+            response[strlen(response) + 1] = '\0';
             send(client_socket, response, strlen(response), 0);
+        }
     }
     printf("Client %d disconnected.\n", id);
     close(client_socket);

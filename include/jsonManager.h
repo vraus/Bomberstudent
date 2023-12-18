@@ -4,6 +4,9 @@
 #include "service.h"
 #include "cJSON.h"
 
+#define RED "\033[1;31m"
+#define DEFAULT "\033[0m"
+
 #define MAX_SIZE_MESSAGE 1024
 #define GAME_LIST_PATH "json/gameslist.json"
 #define MAPS_LIST_PATH "json/mapslist.json"

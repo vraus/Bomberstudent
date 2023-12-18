@@ -101,6 +101,7 @@ int action_game_join(int *cFd, char *buffer)
 
     printf("%s\n", json_str);
     fputs(json_str, game);
+    fputs("\n", game);
     fclose(game);
 
     // Update of the gameslist json file
@@ -134,6 +135,7 @@ int action_game_join(int *cFd, char *buffer)
 
                 printf("%s\n", json_print);
                 fputs(json_print, games_list);
+                fputs("\n", games_list);
                 fclose(games_list);
                 break;
             }
@@ -188,7 +190,9 @@ int create_running_game_data(char *game_name, int *cFd)
     if (game == NULL)
         handle_error("temp game file fopen", -1);
 
+    printf("%s\n", json_print);
     fputs(json_print, game);
+    fputs("\n", game);
     fclose(game);
     return 0;
 }
@@ -269,6 +273,7 @@ int action_game_create(int *cFd, char *buffer)
 
     printf("%s\n", json_str);
     fputs(json_str, game_list_json);
+    fputs("\n", game_list_json);
     fclose(game_list_json);
 
     cJSON_Delete(root);

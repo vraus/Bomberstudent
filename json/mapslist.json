@@ -1,8 +1,8 @@
 {
-    "action": "maps/list",
-    "statut": "200",
-    "message": "ok",
-    "nbMapsList": 4,
+    "action":   "maps/list",
+    "statut":   "200",
+    "message":  "ok",
+    "nbMapsList":   4,
     "maps": [
         {
             "id": 0,
