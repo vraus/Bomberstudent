@@ -95,7 +95,7 @@ void *answer_server(void *arg)
 
         if (response != NULL)
         {
-            response[strlen(response) + 1] = '\0';
+            response[strlen(response)] = '\0';
             send(client_socket, response, strlen(response), 0);
         }
     }

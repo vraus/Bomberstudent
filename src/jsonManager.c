@@ -232,10 +232,12 @@ int action_game_create(int *cFd, char *buffer)
 
     // Gets the json part of client's request
     char buff[strlen(buffer) - 17];
+
     for (int i = 0; i < strlen(buffer) - 17; i++)
         buff[i] = buffer[i + 17];
 
-    buff[strlen(buff) - 1] = '\0';
+    buff[strlen(buffer) - 17] = '\0';
+    printf("buff : %s, buffer: %s, strlenbuff : %ld, strlenbuffer : %ld\n", buff, buffer, strlen(buff), strlen(buffer));
 
     // Parse the client request of creating new game
     cJSON *new_game = cJSON_Parse(buff);
