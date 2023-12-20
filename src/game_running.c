@@ -149,9 +149,11 @@ int run_game(int *cFd, char *content)
 
     // Extraction of game name in content
     char buff[strlen(content) - 15];
+
     for (int i = 0; i < strlen(content) - 15; ++i)
         buff[i] = content[i + 15];
-    buff[strlen(buff) - 1] = '\0';
+
+    buff[strlen(content) - 15] = '\0';
 
     // Parse the request message get the name
     cJSON *file_game_name = cJSON_Parse(buff);
@@ -185,7 +187,6 @@ int run_game(int *cFd, char *content)
     }
 
     close(client_socket);
-    free(buff);
     free(buffer);
 
     return 0;
