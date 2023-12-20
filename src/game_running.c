@@ -1,6 +1,5 @@
 #include "../include/game_running.h"
 
-
 void get_game_info(char *file_name, char *game_name, struct game_infos *game_infos)
 {
     // Ouverture du fichier
@@ -50,7 +49,7 @@ void get_game_info(char *file_name, char *game_name, struct game_infos *game_inf
     }
     cJSON *game_list_content = cJSON_Parse(map_info);
     cJSON *games = cJSON_GetObjectItemCaseSensitive(game_list_content, "games");
-    int map_id;
+    // int map_id;
     if (games != NULL)
     {
         cJSON *element;
@@ -61,8 +60,8 @@ void get_game_info(char *file_name, char *game_name, struct game_infos *game_inf
             {
                 if (strcmp(game_name_check->valuestring, game_name) == 0)
                 {
-                    cJSON *json_map_id = cJSON_GetObjectItemCaseSensitive(element, "mapId");
-                    map_id = cJSON_GetNumberValue(json_map_id);
+                    // cJSON *json_map_id = cJSON_GetObjectItemCaseSensitive(element, "mapId");
+                    // map_id = cJSON_GetNumberValue(json_map_id);
                     break;
                 }
             }
@@ -83,8 +82,8 @@ void get_game_info(char *file_name, char *game_name, struct game_infos *game_inf
             if (player_id != NULL && player_start_pos != NULL)
             {
                 // Convertir les valeurs JSON en entier et chaîne de caractères respectivement
-                int id = cJSON_GetNumberValue(player_id);
-                const char *pos = cJSON_GetStringValue(player_start_pos);
+                // int id = cJSON_GetNumberValue(player_id);
+                // const char *pos = cJSON_GetStringValue(player_start_pos);
             }
         }
     }
@@ -134,6 +133,7 @@ int run_game(int *cFd, char *content)
     char *buffer = (char *)calloc(MAX_SIZE_MESSAGE, sizeof(char));
 
     struct game_infos game_infos_instance = {0, NULL};
+    struct Player *current_player = game_infos_instance.players;
 
     // Extraction of game name in content
     char buff[strlen(content) - 15];
@@ -166,6 +166,17 @@ int run_game(int *cFd, char *content)
     get_game_info(start_game_path, game_name->valuestring, &game_infos_instance);
 
     print_game_info(&game_infos_instance);
+
+    char *id = (char *)calloc(2, sizeof(char));
+
+    while (current_player != NULL)
+    {
+        sprintf(id, "%d", current_player->id);
+        send(client_socket, id, 3, 0);
+        current_player = current_player->next;
+    }
+
+    free(id);
 
     // lire les messages du client et envoyer ses requêtes à tous les autres clients durant toute la partie
     while ((rd = read(client_socket, buffer, MAX_SIZE_MESSAGE)) > 0)
