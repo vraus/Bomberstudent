@@ -16,8 +16,6 @@ struct game_infos
     struct Player *players;
 };
 
-void add_to_dictionnary(struct game_infos *dict, int map_id, int id, const char *pos);
-
 void print_game_info(struct game_infos *game_infos);
 
 void get_game_info(char *file_name, char *game_name, struct game_infos *game_infos);

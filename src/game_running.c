@@ -1,14 +1,5 @@
 #include "../include/game_running.h"
 
-void add_to_dictionnary(struct game_infos *dict, int map_id, int id, const char *pos)
-{
-    struct Player *newPlayer = (struct Player *)malloc(sizeof(struct Player));
-    newPlayer->id = id;
-    strncpy(newPlayer->pos, pos, sizeof(newPlayer->pos));
-    newPlayer->next = dict->players;
-    dict->players = newPlayer;
-    dict->mapId = map_id;
-}
 
 void get_game_info(char *file_name, char *game_name, struct game_infos *game_infos)
 {
@@ -94,9 +85,6 @@ void get_game_info(char *file_name, char *game_name, struct game_infos *game_inf
                 // Convertir les valeurs JSON en entier et chaîne de caractères respectivement
                 int id = cJSON_GetNumberValue(player_id);
                 const char *pos = cJSON_GetStringValue(player_start_pos);
-
-                // Ajouter le joueur à la liste
-                add_to_dictionnary(game_infos, map_id, id, pos);
             }
         }
     }
@@ -185,7 +173,6 @@ int run_game(int *cFd, char *content)
         buffer[rd] = '\0';
         send_message_to_all(&game_infos_instance, client_socket, buffer);
     }
-
     close(client_socket);
     free(buffer);
 
